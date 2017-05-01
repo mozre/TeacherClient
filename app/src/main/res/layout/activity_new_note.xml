@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <variable
+            name="note"
+            type="com.ckt.ckttodo.database.Note"/>
+    </data>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFE7E7E8"
+        android:padding="5dp"
+        tools:context=".ui.NewNoteActivity">
+
+        <LinearLayout
+            android:background="#fff"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:orientation="vertical">
+
+            <EditText
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical|start"
+                android:id="@+id/et_noteTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="5dp"
+                android:textSize="16sp"
+                android:textColorHint="#848484"
+                android:hint="@string/title"
+                android:maxLines="1" />
+
+            <LinearLayout
+                android:id="@+id/ll_line"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#ccc"
+                android:orientation="vertical" />
+
+            <EditText
+                android:id="@+id/et_noteContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="start"
+                android:textSize="15sp"
+                android:textColorHint="#848484"
+                android:hint="@string/content"
+                android:lineSpacingMultiplier="1.5"/>
+        </LinearLayout>
+    </LinearLayout>
+</layout>
