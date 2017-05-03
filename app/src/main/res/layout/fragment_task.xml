@@ -5,9 +5,15 @@
         android:layout_height="match_parent"
         android:background="@color/background_grey"
         tools:context="com.ckt.ckttodo.ui.TaskFragment">
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_task_list"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/common_home_fragment_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <com.mcxiaoke.next.recycler.EndlessRecyclerView
+                android:id="@+id/recyclerTaskList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
     </FrameLayout>
 </layout>

@@ -10,4 +10,6 @@
     <integer name="anim_duration_long">300</integer>
     <dimen name="task_input_list_padding">40dp</dimen>
     <dimen name="card_corner">2dp</dimen>
+    <dimen name="text_size_tips_14">14sp</dimen>
+    <dimen name="text_size_content_12">12sp</dimen>
 </resources>

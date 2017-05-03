@@ -156,6 +156,8 @@ public class TaskDateDialog extends Dialog implements View.OnClickListener {
 
     }
 
+
+
     public interface ClickedSureListener {
         void onClickedSureListener(Calendar cal);
     }

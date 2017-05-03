@@ -1,11 +1,14 @@
 package com.ckt.ckttodo.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,15 +17,20 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.ckt.ckttodo.Base.CommonFragmentView;
 import com.ckt.ckttodo.R;
-import com.ckt.ckttodo.database.DatebaseHelper;
+import com.ckt.ckttodo.database.DatabaseHelper;
 import com.ckt.ckttodo.database.EventTask;
+import com.ckt.ckttodo.database.PostTaskData;
 import com.ckt.ckttodo.databinding.FragmentTaskBinding;
 import com.ckt.ckttodo.databinding.TaskListItemBinding;
+import com.ckt.ckttodo.presenter.PostDetailPresenter;
 import com.ckt.ckttodo.util.TranserverUtil;
 import com.ckt.ckttodo.widgt.TaskDividerItemDecoration;
 import com.ckt.ckttodo.widgt.TimeWatchDialog;
+import com.mcxiaoke.next.recycler.EndlessRecyclerView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,22 +43,26 @@ import io.realm.RealmResults;
 /**
  * Created by mozre
  */
-public class WillPublishTaskFragment extends Fragment {
+public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, EndlessRecyclerView.OnLoadMoreListener, CommonFragmentView {
 
+    private static final String TAG = "InProgressTaskFragment";
     private FragmentTaskBinding mFragmentTaskBinding;
-    private RecyclerView mRecyclerView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private EndlessRecyclerView mRecyclerView;
     private TaskRecyclerViewAdapter mAdapter;
-    private RealmResults<EventTask> mTasks;
-    private LinkedList<EventTask> mShowTasks;
-    private LinkedList<EventTask> mTopTasks = new LinkedList<>();
+    private RealmResults<PostTaskData> mTasks;
+    private LinkedList<PostTaskData> mShowTasks;
+    private LinkedList<PostTaskData> mTopTasks = new LinkedList<>();
     private static boolean isShowCheckBox = false;
     private Map<Integer, Boolean> mItemsSelectStatus = new HashMap<>();
     private ShowMainMenuItem mShowMenuItem;
-    private DatebaseHelper mHelper;
+    private DatabaseHelper mHelper;
+    private Context mContext;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        this.mContext = context;
         try {
             MainActivity activity = (MainActivity) context;
             this.mShowMenuItem = (ShowMainMenuItem) activity;
@@ -69,10 +81,14 @@ public class WillPublishTaskFragment extends Fragment {
 
 
     private View init(LayoutInflater inflater) {
-        mHelper = DatebaseHelper.getInstance(getContext());
+        mShowTasks = new LinkedList<>();
+        mHelper = DatabaseHelper.getInstance(getContext());
         screenTask();
         mFragmentTaskBinding = FragmentTaskBinding.inflate(inflater);
         mRecyclerView = mFragmentTaskBinding.recyclerTaskList;
+        mSwipeRefreshLayout = mFragmentTaskBinding.commonHomeFragmentRefresh;
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mRecyclerView.setOnLoadMoreListener(this);
         mAdapter = new TaskRecyclerViewAdapter();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.addItemDecoration(new TaskDividerItemDecoration(getContext(),
@@ -81,16 +97,17 @@ public class WillPublishTaskFragment extends Fragment {
         return mFragmentTaskBinding.getRoot();
     }
 
+
     private void screenTask() {
         if (mShowTasks == null) {
             mShowTasks = new LinkedList<>();
         }
         mShowTasks.clear();
-        mTasks = mHelper.findAll(EventTask.class);
+        mTasks = mHelper.findAll(PostTaskData.class);
         mTopTasks.clear();
         int i = 0;
-        for (EventTask task : mTasks) {
-            if (task.getTaskStatus() != EventTask.DONE) {
+        for (PostTaskData task : mTasks) {
+            if (task.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
                 if (task.getTopNumber() > 0) {
                     mTopTasks.add(task);
                     continue;
@@ -101,7 +118,7 @@ public class WillPublishTaskFragment extends Fragment {
         sortTop(mTopTasks);
     }
 
-    private void sortTop(LinkedList<EventTask> list) {
+    private void sortTop(LinkedList<PostTaskData> list) {
         if (list.size() == 0) {
             return;
         }
@@ -109,7 +126,7 @@ public class WillPublishTaskFragment extends Fragment {
             mShowTasks.addFirst(list.get(0));
             return;
         }
-        EventTask tmpTask;
+        PostTaskData tmpTask;
         for (int i = 0; i < list.size(); i++) {
             for (int j = i + 1; j < list.size(); ++j) {
                 if (list.get(j).getTopNumber() > list.get(i).getTopNumber()) {
@@ -126,6 +143,73 @@ public class WillPublishTaskFragment extends Fragment {
     public void notifyData() {
         screenTask();
         mAdapter.customNotifyDataSetChanged();
+    }
+
+    @Override
+    public void onRefresh() {
+        PostDetailPresenter presenter = new PostDetailPresenter(mContext, this);
+        long seconds = 0;
+        if (mShowTasks.size() > 0) {
+//            seconds = mData.get(0).getSeconds();
+        }
+        presenter.postArtcleData(seconds);
+        mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void onLoadMore(EndlessRecyclerView view) {
+        Long seconds = null;
+        PostDetailPresenter presenter = new PostDetailPresenter(mContext, this);
+        if (mShowTasks.size() > 0) {
+//            Log.d(TAG, "onLoadMore: max = " + mData.get(0).getSeconds());
+//            seconds = mData.get(mData.size() - 1).getSeconds();
+            Log.d(TAG, "onLoadMore: seconds = " + seconds);
+            try {
+                presenter.loadDetailData(seconds);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            mRecyclerView.setLoading(false);
+        }
+        if (seconds != null && seconds > 0) {
+
+        }
+    }
+
+    @Override
+    public void noMoreNewMessage() {
+        mRecyclerView.setLoading(false);
+        Toast.makeText(mContext, "已经到最下面了！", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void noMoreMessage() {
+
+    }
+
+    @Override
+    public void notifyNewData(List<PostTaskData> mData) {
+        for (int i = 0; i < mData.size(); ++i) {
+            mShowTasks.addFirst(mData.get(i));
+        }
+        Log.d(TAG, "notifyNewData: mdata = " + mShowTasks.size());
+        if (mShowTasks.size() > 0) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void notifyMoreData(List<PostTaskData> mData) {
+        for (int i = 0; i < mData.size(); ++i) {
+            mShowTasks.addLast(mData.get(i));
+        }
+        if (mShowTasks.size() > 0) {
+            mAdapter.notifyDataSetChanged();
+            mRecyclerView.setLoading(false);
+        }
     }
 
 
@@ -207,7 +291,7 @@ public class WillPublishTaskFragment extends Fragment {
         TextView textViewSpendTime;
         ImageButton imageButtonStatus;
         CheckBox checkBox;
-        EventTask mTask;
+        PostTaskData mTask;
         TextView textViewToTop;
         private TaskListItemBinding mBinding;
 
@@ -216,7 +300,6 @@ public class WillPublishTaskFragment extends Fragment {
             this.mBinding = binding;
             textViewPlan = binding.textTaskListPlan;
             textViewPlanTime = binding.textTaskListPlanTime;
-            textViewSpendTime = binding.textTaskListTakeTime;
             imageButtonStatus = binding.imageTaskStatus;
             checkBox = binding.checkTaskSelect;
             container = binding.relativeContainer;
@@ -235,7 +318,7 @@ public class WillPublishTaskFragment extends Fragment {
         }
 
 
-        public void setData(EventTask data) {
+        public void setData(PostTaskData data) {
             this.mTask = data;
             mBinding.setTask(data);
             mBinding.executePendingBindings();
@@ -261,11 +344,16 @@ public class WillPublishTaskFragment extends Fragment {
                         mItemsSelectStatus.put((Integer) container.getTag(), true);
                     }
                 } else {
-//                    Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-//                    intent.putExtra(TaskDetailActivity.EVENT_TASK_ID, mTask.getTaskId());
-//                    startActivityForResult(intent, MainActivity.MAIN_TO_TASK_DETAIL_CODE);
+
+                    Intent intent = new Intent(getContext(),NewExamActivity.class);
+                    intent.putExtra(NewExamActivity.PASS_PROTAL,NewExamActivity.MODIFY_EXAM);
+                    intent.putExtra(NewExamActivity.PASS_ID,mTask.getExam_id());
+                    startActivityForResult(intent,MainActivity.WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE);
+
+
                 }
-            }else if (v == textViewToTop) {
+
+            } else if (v == textViewToTop) {
                 int position = (Integer) container.getTag();
                 if (mShowTasks.get(position).getTopNumber() > 0) {
                     setTaskCancelTop(position);
@@ -299,7 +387,7 @@ public class WillPublishTaskFragment extends Fragment {
 
     private void setTaskCancelTop(int position) {
 
-        EventTask eventTask = copyTask(mShowTasks.get(position));
+        PostTaskData eventTask = copyTask(mShowTasks.get(position));
         eventTask.setTopNumber(EventTask.TOP_NORMAL);
         mHelper.update(eventTask);
         mShowMenuItem.setShowMenuItem(false);
@@ -315,8 +403,8 @@ public class WillPublishTaskFragment extends Fragment {
      * @param position
      */
     private void setTaskToTop(Integer position) {
-        List<EventTask> adjustList = null;
-        EventTask newTopTask = copyTask(mShowTasks.get(position));
+        List<PostTaskData> adjustList = null;
+        PostTaskData newTopTask = copyTask(mShowTasks.get(position));
         newTopTask.setTopNumber(EventTask.TOP_THREE);
         adjustList = adjustOrder(mShowTasks.get(position).getTopNumber());
         adjustList.add(newTopTask);
@@ -328,10 +416,10 @@ public class WillPublishTaskFragment extends Fragment {
         mAdapter.customDeleteNotifyDataSetChanged();
     }
 
-    private List<EventTask> adjustOrder(Integer topNumber) {
-        List<EventTask> tmpList = new ArrayList<>();
-        EventTask tmpTask;
-        EventTask resultTask = null;
+    private List<PostTaskData> adjustOrder(Integer topNumber) {
+        List<PostTaskData> tmpList = new ArrayList<>();
+        PostTaskData tmpTask;
+        PostTaskData resultTask = null;
         for (int i = 0; i < mTopTasks.size(); ++i) {
             tmpTask = mTopTasks.get(i);
             if (tmpTask.getTopNumber() == topNumber) {
@@ -354,23 +442,21 @@ public class WillPublishTaskFragment extends Fragment {
     }
 
 
-    private EventTask copyTask(EventTask tmpTask) {
-        EventTask result = new EventTask();
-        result.setTaskId(tmpTask.getTaskId());
-        result.setPlan(tmpTask.getPlan());
-        result.setCreateUerId(tmpTask.getCreateUerId());
-        result.setTaskContent(tmpTask.getTaskContent());
-        result.setTaskPredictTime(tmpTask.getTaskPredictTime());
-        result.setTaskPriority(tmpTask.getTaskPriority());
-        result.setTaskStatus(tmpTask.getTaskStatus());
-        result.setTaskTitle(tmpTask.getTaskTitle());
-        result.setTaskRealSpendTime(tmpTask.getTaskRealSpendTime());
-        result.setTaskUpdateTime(tmpTask.getTaskUpdateTime());
-        result.setExecUserId(tmpTask.getExecUserId());
-        result.setPlanId(tmpTask.getPlanId());
-        result.setTaskRemindTime(tmpTask.getTaskRemindTime());
-        result.setTaskStartTime(tmpTask.getTaskStartTime());
-        result.setTaskType(tmpTask.getTaskType());
+    private PostTaskData copyTask(PostTaskData tmpTask) {
+        PostTaskData result = new PostTaskData();
+        result.setExam_id(tmpTask.getExam_id());
+        result.setExam_title(tmpTask.getExam_title());
+        result.setExam_content(tmpTask.getExam_content());
+        result.setExam_lan(tmpTask.getExam_lan());
+        result.setExam_in_arg(tmpTask.getExam_in_arg());
+        result.setExam_out_arg(tmpTask.getExam_out_arg());
+        result.setExam_deadline(tmpTask.getExam_deadline());
+        result.setExam_update_time(tmpTask.getExam_update_time());
+        result.setExam_remark(tmpTask.getExam_remark());
+        result.setExam_tatal(tmpTask.getExam_tatal());
+        result.setExam_commit_count(tmpTask.getExam_commit_count());
+        result.setExam_correct_count(tmpTask.getExam_correct_count());
+        result.setStatus(tmpTask.getStatus());
         result.setTopNumber(tmpTask.getTopNumber());
         return result;
     }
@@ -394,13 +480,13 @@ public class WillPublishTaskFragment extends Fragment {
     public void finishDeleteAction(boolean isDelete) {
         isShowCheckBox = false;
         if (isDelete) {
-            List<EventTask> tasks = new ArrayList<>();
+            List<PostTaskData> tasks = new ArrayList<>();
             for (int position : mItemsSelectStatus.keySet()) {
                 if (mItemsSelectStatus.get(position)) {
                     tasks.add(mShowTasks.get(position));
                 }
             }
-            for (EventTask task1 : tasks) {
+            for (PostTaskData task1 : tasks) {
                 mHelper.delete(task1);
             }
             mAdapter.customDeleteNotifyDataSetChanged();
@@ -411,16 +497,16 @@ public class WillPublishTaskFragment extends Fragment {
 
     public void finishTaskAction() {
         isShowCheckBox = false;
-        List<EventTask> tasks = new ArrayList<>();
+        List<PostTaskData> tasks = new ArrayList<>();
         for (int position : mItemsSelectStatus.keySet()) {
             if (mItemsSelectStatus.get(position)) {
                 tasks.add(mShowTasks.get(position));
             }
         }
-        EventTask upDateTask = new EventTask();
-        for (EventTask task1 : tasks) {
-            TranserverUtil.transEventTask(upDateTask, task1);
-            upDateTask.setTaskStatus(EventTask.DONE);
+        PostTaskData upDateTask = new PostTaskData();
+        for (PostTaskData task1 : tasks) {
+            TranserverUtil.transPostTask(upDateTask, task1);
+            upDateTask.setStatus(PostTaskData.STATUS_DATA_PASS);
             mHelper.update(upDateTask);
         }
         mAdapter.customDeleteNotifyDataSetChanged();

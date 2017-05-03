@@ -2,10 +2,12 @@ package com.ckt.ckttodo.util;
 
 import com.ckt.ckttodo.database.EventTask;
 import com.ckt.ckttodo.database.Plan;
+import com.ckt.ckttodo.database.PostTaskData;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Created by ckt on 2/23/17.
@@ -46,6 +48,22 @@ public class TranserverUtil {
         newTask.setTaskUpdateTime(task.getTaskUpdateTime());
         newTask.setTopNumber(task.getTopNumber());
         newTask.setPlan(task.getPlan());
+    }
+    public static void transPostTask(PostTaskData newTask, PostTaskData task) {
+        newTask.setExam_id(task.getExam_id());
+        newTask.setExam_title(task.getExam_title());
+        newTask.setExam_content(task.getExam_content());
+        newTask.setExam_lan(task.getExam_lan());
+        newTask.setExam_in_arg(task.getExam_in_arg());
+        newTask.setExam_out_arg(task.getExam_out_arg());
+        newTask.setExam_deadline(task.getExam_deadline());
+        newTask.setExam_update_time(task.getExam_update_time());
+        newTask.setExam_remark(task.getExam_remark());
+        newTask.setExam_tatal(task.getExam_tatal());
+        newTask.setExam_commit_count(task.getExam_commit_count());
+        newTask.setExam_correct_count(task.getExam_correct_count());
+        newTask.setStatus(task.getStatus());
+        newTask.setTopNumber(task.getTopNumber());
     }
 
 
@@ -108,6 +126,9 @@ public class TranserverUtil {
 
 
 
+
+
+
     public static String formatTime(int thisTime) {
         int min, hour, sec;
         StringBuilder build = new StringBuilder();
@@ -131,5 +152,11 @@ public class TranserverUtil {
         }
 
         return build;
+    }
+
+
+    public static  String getUUID(){
+
+        return UUID.randomUUID().toString();
     }
 }

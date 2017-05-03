@@ -36,9 +36,13 @@
             android:label="@string/dataCount" />
         <activity android:name=".ui.VoiceActivity" />
 
-        <activity android:name=".ui.LoginActivity" android:label="@string/login"/>
-        <activity android:name=".ui.SignUpActivity" android:label="@string/new_account_sign_up"/>
-
+        <activity
+            android:name=".ui.LoginActivity"
+            android:label="@string/login" />
+        <activity
+            android:name=".ui.SignUpActivity"
+            android:label="@string/new_account_sign_up" />
+        <activity android:name=".ui.NewExamActivity" />
     </application>
 
 </manifest>

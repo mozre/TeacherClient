@@ -37,15 +37,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ckt.ckttodo.R;
-import com.ckt.ckttodo.database.DatebaseHelper;
+import com.ckt.ckttodo.database.DatabaseHelper;
 import com.ckt.ckttodo.database.Project;
 import com.ckt.ckttodo.databinding.ActivityMainBinding;
 import com.ckt.ckttodo.util.Constants;
 import com.ckt.ckttodo.util.PermissionUtil;
-import com.ckt.ckttodo.util.VoiceInputUtil;
-import com.ckt.ckttodo.widgt.VoiceInputDialog;
-import com.vincent.filepicker.Constant;
-import com.vincent.filepicker.activity.NormalFilePickActivity;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,10 +59,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int REQUEST_PERMISSIONS = 1;
     public final static int MAIN_TO_NEW_TASK_CODE = 100;
     public final static int MAIN_TO_TASK_DETAIL_CODE = 200;
+    public final static int WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE = 300;
+    public final static int IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE = 400;
+    public final static int FINISHED_TO_NEW_EXAM_REQUEST_CODE = 500;
     private ActivityMainBinding mActivityMainBinding;
     private MenuItem mMenuItemSure;
     private MenuItem mMenuItemFalse;
-    private InProgressTaskFragment mTaskFragment;
+    private InProgressTaskFragment mInProgressTaskFragment;
+    private WillPublishTaskFragment mWillPublishFragment;
+    private FinishedTaskFragment mFinishedFragment;
     private List<Fragment> mFragmentList;
     private static String[] PERMISSION_LIST = new String[]{Constants.RECORD_AUDIO, Constants.READ_PHONE_STATE, Constants.READ_EXTERNAL_STORAGE, Constants.WRITE_EXTERNAL_STORAGE};
     private ConnectivityManager mConnectivityManager;
@@ -75,15 +76,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 //        if (resultCode == NewTaskActivity.NEW_TASK_SUCCESS_RESULT_CODE) {
-//            mTaskFragment.notifyData();
+//            mInProgressTaskFragment.notifyData();
 //        } else if (resultCode == TaskDetailActivity.TASK_DETAIL_MAIN_RESULT_CODE) {
 //            if (data != null) {
 //                boolean shouldUpdateData = data.getBooleanExtra(TaskDetailActivity.IS_TASK_DETAIL_MODIFY, false);
 //                if (shouldUpdateData) {
-//                    mTaskFragment.notifyData();
+//                    mInProgressTaskFragment.notifyData();
 //                }
 //            }
 //        }
+        if(resultCode == NewExamActivity.BACK_FROM_NEW_EXAM_RESULT_CODE){
+
+            String id = data.getStringExtra(NewExamActivity.PASS_ID);
+
+            switch (requestCode){
+                case WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE:
+
+                    break;
+                case  IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE:
+
+                    break;
+
+                case FINISHED_TO_NEW_EXAM_REQUEST_CODE:
+
+                    break;
+
+            }
+
+        }
+
     }
 
 
@@ -148,14 +169,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Fragment fragment = null;
                 switch (position) {
                     case 0:
-                        mTaskFragment = new InProgressTaskFragment();
-                        fragment = mTaskFragment;
+                        mInProgressTaskFragment = new InProgressTaskFragment();
+                        fragment = mInProgressTaskFragment;
                         break;
                     case 1:
-                        fragment = new FinishedTaskFragment();
+                        mFinishedFragment = new FinishedTaskFragment();
+                        fragment = mFinishedFragment;
                         break;
                     case 2:
-                        fragment = new WillPublishTaskFragment();
+                        mWillPublishFragment = new WillPublishTaskFragment();
+                        fragment = mWillPublishFragment;
                         break;
                 }
                 mFragmentList.add(fragment);
@@ -210,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mActivityMainBinding.appBarMain.addText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                startActivityForResult(new Intent(MainActivity.this, NewTaskActivity.class), MAIN_TO_NEW_TASK_CODE);
+                startActivityForResult(new Intent(MainActivity.this, NewExamActivity.class), MAIN_TO_NEW_TASK_CODE);
             }
         });
 
@@ -242,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 final String projectName = editText.getText().toString().trim();
-                                for (Project project : DatebaseHelper.getInstance(MainActivity.this).findAll(Project.class)) {
+                                for (Project project : DatabaseHelper.getInstance(MainActivity.this).findAll(Project.class)) {
                                     if (projectName.equals(project.getProjectTitle())) {
                                         showToast(getResources().getString(R.string.project_exist));
                                         return;
@@ -256,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     project.setCreateTime(date.getTime());
                                     project.setEndTime(date.getTime());
                                     project.setLastUpdateTime(date.getTime());
-                                    DatebaseHelper.getInstance(MainActivity.this).insert(project);
+                                    DatabaseHelper.getInstance(MainActivity.this).insert(project);
                                 } else {
                                     showToast(getResources().getString(R.string.plan_not_null));
                                 }
@@ -348,13 +371,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 mMenuItemFalse.setVisible(false);
                 mMenuItemSure.setVisible(false);
-                mTaskFragment.finishTaskAction();
+                mInProgressTaskFragment.finishTaskAction();
                 break;
             case R.id.menu_delete:
                 //删除选中项结束事件
                 mMenuItemFalse.setVisible(false);
                 mMenuItemSure.setVisible(false);
-                mTaskFragment.finishDeleteAction(true);
+                mInProgressTaskFragment.finishDeleteAction(true);
                 break;
         }
 
@@ -405,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mMenuItemSure.isVisible()) {
-                mTaskFragment.finishDeleteAction(false);
+                mInProgressTaskFragment.finishDeleteAction(false);
                 mMenuItemSure.setVisible(false);
                 mMenuItemFalse.setVisible(false);
                 return true;
@@ -422,6 +445,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 //    @Override
 //    public void notifyTask() {
-//        mTaskFragment.notifyData();
+//        mInProgressTaskFragment.notifyData();
 //    }
 }
