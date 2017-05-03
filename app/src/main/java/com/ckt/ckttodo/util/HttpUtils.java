@@ -24,7 +24,7 @@ public class HttpUtils {
     }
 
     public static String getCurrentURI(String path) {
-        path =  Constant.SERVER_HOST + "/image? =" + path;
+        path =  GlobalConfig.SERVER_HOST + "/image? =" + path;
         return path;
     }
 

@@ -2,6 +2,7 @@ package com.ckt.ckttodo.ui;
 
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,12 +39,16 @@ import android.widget.Toast;
 
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
+import com.ckt.ckttodo.database.PostTaskData;
 import com.ckt.ckttodo.database.Project;
 import com.ckt.ckttodo.databinding.ActivityMainBinding;
+import com.ckt.ckttodo.util.Constant;
 import com.ckt.ckttodo.util.Constants;
 import com.ckt.ckttodo.util.PermissionUtil;
+import com.ckt.ckttodo.widgt.ContentDialog;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -51,7 +56,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, InProgressTaskFragment.ShowMainMenuItem,FinishedTaskFragment.ShowMainMenuItem,WillPublishTaskFragment.ShowMainMenuItem, ActivityCompat.OnRequestPermissionsResultCallback{
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, InProgressTaskFragment.ShowMainMenuItem, FinishedTaskFragment.ShowMainMenuItem, WillPublishTaskFragment.ShowMainMenuItem, ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String TAG = "main";
     public static final String PLAN_ID = "planId";
     public static final String SHARE_PREFERENCES_NAME = "com.ckt.ckttodo";
@@ -62,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public final static int WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE = 300;
     public final static int IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE = 400;
     public final static int FINISHED_TO_NEW_EXAM_REQUEST_CODE = 500;
+    public final static int LOGIN_OUT_RESULT_CODE = 21;
+    public final static int FINSH_ACTIVITY_RESULT_CODE = 22;
     private ActivityMainBinding mActivityMainBinding;
     private MenuItem mMenuItemSure;
     private MenuItem mMenuItemFalse;
@@ -71,6 +78,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private List<Fragment> mFragmentList;
     private static String[] PERMISSION_LIST = new String[]{Constants.RECORD_AUDIO, Constants.READ_PHONE_STATE, Constants.READ_EXTERNAL_STORAGE, Constants.WRITE_EXTERNAL_STORAGE};
     private ConnectivityManager mConnectivityManager;
+    private DatabaseHelper mHelper;
+    private ViewPager mViewPager;
+    private int mBackKeyPressedTimes = 0;
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -85,21 +96,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //                }
 //            }
 //        }
-        if(resultCode == NewExamActivity.BACK_FROM_NEW_EXAM_RESULT_CODE){
+        if (resultCode == NewExamActivity.BACK_FROM_NEW_EXAM_RESULT_CODE) {
 
             String id = data.getStringExtra(NewExamActivity.PASS_ID);
+            PostTaskData data1 = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
+            if (data1.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
 
-            switch (requestCode){
-                case WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE:
+                mWillPublishFragment.notifyData();
 
-                    break;
-                case  IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE:
-
-                    break;
-
-                case FINISHED_TO_NEW_EXAM_REQUEST_CODE:
-
-                    break;
+            } else {
+                long now = Calendar.getInstance().getTimeInMillis();
+                long check = data1.getExam_deadline();
+                if (data1.getExam_deadline() > now) {
+                    mInProgressTaskFragment.notifyData();
+                } else {
+                    mFinishedFragment.notifyData();
+                }
 
             }
 
@@ -126,6 +138,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+//        Log.d("mozre", "onCreate: " + getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE).getBoolean(WelcomeActivity.IS_LOGIN, false));
+//
+//        if (!getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE).getBoolean(WelcomeActivity.IS_LOGIN, false)) {
+//            setResult(LOGIN_OUT_RESULT_CODE);
+//            finish();
+//        }
         super.onCreate(savedInstanceState);
         mFragmentList = new ArrayList<>();
         mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -133,7 +151,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (Build.VERSION.SDK_INT >= 21) {
             setupWindowAnimations();
         }
-        initPermission();
+//        initPermission();
+        mHelper = DatabaseHelper.getInstance(this);
+        setResult(FINSH_ACTIVITY_RESULT_CODE);
     }
 
     private void initPermission() {
@@ -161,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = mActivityMainBinding.navView;
         navigationView.setNavigationItemSelectedListener(this);
 
-        final ViewPager viewPager = mActivityMainBinding.appBarMain.contentMain.viewPager;
+        mViewPager = mActivityMainBinding.appBarMain.contentMain.viewPager;
 
         FragmentPagerAdapter fragmentPagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -225,10 +245,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //
 //            }
 //        });
+        Log.d(TAG, "initUI: requestcode = ");
 
-        viewPager.setAdapter(fragmentPagerAdapter);
+        mViewPager.setAdapter(fragmentPagerAdapter);
         TabLayout tabLayout = mActivityMainBinding.appBarMain.contentMain.tabLayout;
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setupWithViewPager(mViewPager);
 
         mActivityMainBinding.appBarMain.addText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -238,11 +259,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
-
         mActivityMainBinding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (viewPager.getCurrentItem()) {
+                switch (mViewPager.getCurrentItem()) {
                     case 0:
                         //                        getTheVoiceInput();
                         break;
@@ -343,7 +363,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -377,7 +396,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //删除选中项结束事件
                 mMenuItemFalse.setVisible(false);
                 mMenuItemSure.setVisible(false);
-                mInProgressTaskFragment.finishDeleteAction(true);
+
+                switch (mViewPager.getCurrentItem()) {
+                    case 0:
+                        mInProgressTaskFragment.finishDeleteAction(true);
+                        break;
+                    case 1:
+                        mFinishedFragment.finishDeleteAction(true);
+                        break;
+                    case 2:
+                        mWillPublishFragment.finishDeleteAction(true);
+                        break;
+
+                }
+
+
                 break;
         }
 
@@ -397,9 +430,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (id) {
 
             case R.id.nav_settings:
+                new ContentDialog(this).show();
                 break;
             case R.id.nav_about:
                 transitionTo(new Intent(this, AboutActivity.class));
+                break;
+            case R.id.nav_login_out:
+                setResult(LOGIN_OUT_RESULT_CODE);
+                finish();
                 break;
         }
         DrawerLayout drawer = mActivityMainBinding.drawerLayout;
@@ -437,10 +475,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onKeyDown(keyCode, event);
     }
-
-
-
-
 
 
 //    @Override

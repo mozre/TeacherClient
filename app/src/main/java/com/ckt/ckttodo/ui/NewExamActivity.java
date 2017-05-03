@@ -21,6 +21,8 @@ import com.ckt.ckttodo.util.TranserverUtil;
 import com.ckt.ckttodo.widgt.TaskDateDialog;
 
 import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NewExamActivity extends AppCompatActivity implements View.OnClickListener, TaskDateDialog.ClickedSureListener {
     private EditText mEditTextTitle;
@@ -36,13 +38,14 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
     private Calendar mCalendar = Calendar.getInstance();
     private TextView mTextViewCount;
     private TextView mTextViewCorrect;
-    private PostTaskData mPostdata;
+    private PostTaskData mPostdata = new PostTaskData();
     private RadioButton mRadioButtonC;
     private RadioButton mRadioButtonCpp;
     private RadioButton mRadioButtonPython;
     private MenuItem mMenuItemEdit;
     private DatabaseHelper mHelper;
     private int mPassProtal;
+    private Timer mTimer = new Timer();
 
     public static final int NEW_EXAM = 1;
     public static final int MODIFY_EXAM = 2;
@@ -83,13 +86,12 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mTextViewDeadline.setOnClickListener(this);
         mButtonSubmit.setOnClickListener(this);
         mButtonSave.setOnClickListener(this);
+        mPostdata.setExam_lan(PostTaskData.LAN_C);
 
         mRadioGroupLan.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (mPostdata == null) {
-                    mPostdata = new PostTaskData();
-                }
+
                 switch (checkedId) {
                     case R.id.c:
                         mPostdata.setExam_lan(PostTaskData.LAN_C);
@@ -111,12 +113,29 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
             case NEW_EXAM:
                 mPassProtal = NEW_EXAM;
-                mMenuItemEdit.setVisible(false);
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (mMenuItemEdit != null) {
+                            mMenuItemEdit.setVisible(false);
+                            cancel();
+                        }
+                    }
+                }, 2, 30);
+
                 setEditAble(true);
                 break;
             case MODIFY_EXAM:
                 mPassProtal = MODIFY_EXAM;
-                mMenuItemEdit.setVisible(false);
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (mMenuItemEdit != null) {
+                            mMenuItemEdit.setVisible(false);
+                            cancel();
+                        }
+                    }
+                }, 2, 30);
                 setEditAble(true);
                 String exam_id = intent.getStringExtra(PASS_ID);
                 if (exam_id != null) {
@@ -126,7 +145,21 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case SHOW_EXAM:
                 mPassProtal = SHOW_EXAM;
-                mMenuItemEdit.setVisible(true);
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (mMenuItemEdit != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mMenuItemEdit.setVisible(true);
+                                }
+                            });
+
+                            cancel();
+                        }
+                    }
+                }, 2, 30);
                 setEditAble(false);
                 String exam_id1 = intent.getStringExtra(PASS_ID);
                 if (exam_id1 != null) {
@@ -136,7 +169,15 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             default:
                 mPassProtal = NEW_EXAM;
-                mMenuItemEdit.setVisible(false);
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (mMenuItemEdit != null) {
+                            mMenuItemEdit.setVisible(false);
+                            cancel();
+                        }
+                    }
+                }, 2, 30);
                 setEditAble(true);
                 break;
         }
@@ -160,31 +201,63 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mRadioButtonC.setEnabled(isEditable);
         mRadioButtonCpp.setEnabled(isEditable);
         mRadioButtonPython.setEnabled(isEditable);
+        if(isEditable){
+            mButtonSave.setVisibility(View.VISIBLE);
+            mButtonSubmit.setVisibility(View.VISIBLE);
+        }
 
     }
 
     private void fillData(PostTaskData data, boolean isShowButton) {
         mEditTextTitle.setText(data.getExam_title());
-        mEditTextContent.setText(data.getExam_content());
-        mEditTextInputArags.setText(data.getExam_in_arg());
-        mEditTextOutputArgs.setText(data.getExam_out_arg());
+        if (data.getExam_content() != null && data.getExam_content().replace(" ", "").length() > 0) {
+            mEditTextContent.setText(data.getExam_content());
+        } else {
+            mEditTextContent.setText(" ");
+        }
+        if (data.getExam_in_arg() != null && data.getExam_in_arg().replace(" ", "").length() > 0) {
+            mEditTextInputArags.setText(data.getExam_in_arg());
+        } else {
+            mEditTextInputArags.setText(" ");
+        }
+        if (data.getExam_out_arg() != null && data.getExam_out_arg().replace(" ", "").length() > 0) {
+            mEditTextOutputArgs.setText(data.getExam_out_arg());
+        } else {
+            mEditTextOutputArgs.setText(" ");
+        }
+        if (data.getExam_remark() != null &&data.getExam_remark().replace(" ", "").length() > 0) {
+
+            mEditTextRemake.setText(data.getExam_remark());
+        }else {
+            mEditTextRemake.setText("");
+        }
         mTextViewDeadline.setText(TranserverUtil.millsToDate(data.getExam_deadline()));
         mCalendar.setTimeInMillis(data.getExam_deadline());
-        mEditTextRemake.setText(data.getExam_remark());
         switch (data.getExam_lan()) {
             case R.id.c:
                 mPostdata.setExam_lan(PostTaskData.LAN_C);
+                mRadioButtonC.setSelected(true);
                 break;
             case R.id.cpp:
                 mPostdata.setExam_lan(PostTaskData.LAN_CPP);
+                mRadioButtonCpp.setSelected(true);
                 break;
             case R.id.py:
                 mPostdata.setExam_lan(PostTaskData.LAN_PYTHON);
+                mRadioButtonPython.setSelected(true);
                 break;
         }
 
-        mTextViewCount.setEnabled(isShowButton);
-        mTextViewCorrect.setEnabled(isShowButton);
+
+
+        if (isShowButton) {
+            mButtonSave.setVisibility(View.VISIBLE);
+            mButtonSubmit.setVisibility(View.VISIBLE);
+        } else {
+            mButtonSave.setVisibility(View.GONE);
+            mButtonSubmit.setVisibility(View.GONE);
+        }
+
 
 
     }
@@ -194,7 +267,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.exam_deadline:
                 mDailog = new TaskDateDialog(this, this);
-                mDailog.show(mCalendar.getTimeInMillis());
+                mDailog.show(mCalendar.getTimeInMillis(), false);
 
                 break;
             case R.id.exam_submit:
@@ -214,9 +287,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             Toast.makeText(this, getResources().getString(R.string.exam_title_is_null), Toast.LENGTH_SHORT).show();
             return;
         }
-        if (mPostdata == null) {
-            mPostdata = new PostTaskData();
-        }
+
 
         mPostdata.setExam_title(mEditTextTitle.getText().toString());
         if (TextUtils.isEmpty(mEditTextContent.getText())) {
@@ -244,12 +315,12 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             mPostdata.setStatus(PostTaskData.STATUS_DATA_SAVE);
         }
 
+        mPostdata.setExam_id(TranserverUtil.getUUID());
         mHelper.insert(mPostdata);
 
-        mPostdata.setExam_id(TranserverUtil.getUUID());
-        intent.putExtra(PASS_ID,mPostdata.getExam_id());
-        intent.putExtra(PASS_PROTAL,mPassProtal);
-        setResult(BACK_FROM_NEW_EXAM_RESULT_CODE,intent);
+        intent.putExtra(PASS_ID, mPostdata.getExam_id());
+        intent.putExtra(PASS_PROTAL, mPassProtal);
+        setResult(BACK_FROM_NEW_EXAM_RESULT_CODE, intent);
         finish();
     }
 
@@ -264,6 +335,10 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                break;
+            case R.id.menu_edit:
+                setEditAble(true);
+
                 break;
 
 

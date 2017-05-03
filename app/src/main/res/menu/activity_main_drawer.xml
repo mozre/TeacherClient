@@ -7,12 +7,18 @@
             android:id="@+id/nav_settings"
             android:icon="@mipmap/nav_settings"
             android:checkable="false"
-            android:title="@string/setting"/>
+            android:title="@string/tasks"/>
+
         <item
             android:id="@+id/nav_about"
             android:icon="@mipmap/nav_about"
             android:checkable="false"
             android:title="@string/about"/>
+        <item
+            android:id="@+id/nav_login_out"
+            android:icon="@mipmap/nav_about"
+            android:checkable="false"
+            android:title="@string/login_out"/>
     </group>
 
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CKT Todo</string>
+    <string name="app_name">Onlinejudge</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -7,9 +7,9 @@
     <string name="action_settings">Settings</string>
 
 
-    <string name="task">task</string>
-    <string name="project">project</string>
-    <string name="note">note</string>
+    <string name="task">进行中</string>
+    <string name="project">已截止</string>
+    <string name="note">草稿箱</string>
     <string name="new_task">新建任务</string>
     <string name="edit_task">Edit Task</string>
     <string name="new_project">新建项目</string>
@@ -143,7 +143,10 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="about">关于</string>
+    <string name="login_out">退出登录</string>
     <string name="_default">默认</string>
+    <string name="input_ip">输入服务器IP地址</string>
+    <string name="ip">IP</string>
     <string name="exam_content">题目内容</string>
     <string name="exam_title">题目标题</string>
     <string name="input_args">输入参数，各参数用空格分开</string>
@@ -159,7 +162,7 @@
     <string name="pomodo_title">番茄时钟计时中</string>
     <string name="pomodo_notification_tip">Pomodo</string>
     <string name="net_not_connected">当前网络不可用，请连接网络！</string>
-    <string name="tasks">任务</string>
+    <string name="tasks">设置IP</string>
     <string name="new_note">新建便签</string>
     <string name="alter_note">修改</string>
     <string name="dataCount">数据统计</string>
@@ -175,8 +178,8 @@
     <string name="website">网站</string>
     <string name="GitHub">GitHub</string>
     <string name="opinion">意见反馈</string>
-    <string name="author">made by CK-Telecom</string>
-    <string name="version">v0.1 Beta</string>
+    <string name="author">MADE BY MOZRE</string>
+    <string name="version">V0.1 Beta</string>
     <string name="sliding">>>>滑动解锁>>></string>
     <string name="hour">小时</string>
     <string name="containTask">包含任务</string>
@@ -205,4 +208,14 @@
     <string name="at_least_3_characters">至少三个字符</string>
     <string name="signup_failed">注册失败</string>
     <string name="registering">正在注册</string>
+    <string name="edt_login_name">用户名</string>
+    <string name="edt_login_password">密 码</string>
+    <string name="btn_register">注 册</string>
+    <string name="btn_login">登 录</string>
+    <string name="edt_register_name">Username</string>
+    <string name="edt_register_email">E-mail</string>
+    <string name="edt_register_password">Password</string>
+    <string name="edt_register_confirm">Confirm Password</string>
+    <string name="edt_register_phone">Phone</string>
+    <string name="btn_register_submit">立即注册</string>
 </resources>

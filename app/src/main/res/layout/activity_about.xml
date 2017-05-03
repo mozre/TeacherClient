@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -29,34 +28,36 @@
                     android:layout_height="70dp"
                     android:layout_gravity="center"
                     android:scaleType="fitCenter"
-                    android:src="@mipmap/ic_launcher"
+                    android:src="@drawable/icon"
                     app:riv_border_color="#000000"
                     app:riv_border_width="1dp"
                     app:riv_oval="true"
-                    app:srcCompat="@android:drawable/sym_def_app_icon"/>
+                    app:srcCompat="@android:drawable/sym_def_app_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
                     android:gravity="center"
                     android:padding="3dp"
-                    android:text="@string/main"
-                    android:textSize="16sp"/>
+                    android:text="@string/app_name"
+                    android:textSize="16sp" />
 
                 <TextView
+                    android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:gravity="center"
+                    android:layout_marginTop="5dp"
                     android:padding="3dp"
                     android:text="@string/version"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp" />
             </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout
-            android:layout_width="250dp"
+            android:layout_width="200dp"
             android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_weight="4.5"
@@ -70,14 +71,14 @@
                 android:layout_weight="5"
                 android:clickable="true"
                 android:gravity="center_vertical"
-                android:padding="8dp"
-                android:text="@string/grade"/>
+                android:padding="5dp"
+                android:text="@string/grade" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.1"
-                android:background="#ccc"/>
+                android:background="#ccc" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -85,14 +86,14 @@
                 android:layout_weight="5"
                 android:clickable="true"
                 android:gravity="center_vertical"
-                android:padding="8dp"
-                android:text="@string/website"/>
+                android:padding="5dp"
+                android:text="@string/website" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.1"
-                android:background="#ccc"/>
+                android:background="#ccc" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -100,14 +101,14 @@
                 android:layout_weight="5"
                 android:clickable="true"
                 android:gravity="center_vertical"
-                android:padding="8dp"
-                android:text="@string/GitHub"/>
+                android:padding="5dp"
+                android:text="@string/GitHub" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.1"
-                android:background="#ccc"/>
+                android:background="#ccc" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -115,14 +116,14 @@
                 android:layout_weight="5"
                 android:clickable="true"
                 android:gravity="center_vertical"
-                android:padding="8dp"
-                android:text="@string/opinion"/>
+                android:padding="5dp"
+                android:text="@string/opinion" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.1"
-                android:background="#ccc"/>
+                android:background="#ccc" />
         </LinearLayout>
 
         <TextView
@@ -131,6 +132,6 @@
             android:layout_gravity="center"
             android:layout_weight="1.5"
             android:gravity="center"
-            android:text="@string/author"/>
+            android:text="@string/author" />
     </LinearLayout>
 </layout>

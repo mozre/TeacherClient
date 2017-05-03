@@ -124,6 +124,28 @@ public class TaskDateDialog extends Dialog implements View.OnClickListener {
             }
         });
     }
+    public void show(long dateMills,boolean isShowDateOnly){
+        super.show();
+        if(isShowDateOnly){
+            mTextViewPlan.setVisibility(View.VISIBLE);
+            mLinearLayoutTask.setVisibility(View.GONE);
+            mTimePicker.setVisibility(View.GONE);
+        }else {
+            mLinearLayoutTask.setVisibility(View.VISIBLE);
+            mTimePicker.setVisibility(View.GONE);
+        }
+        mDatePicker.setVisibility(View.VISIBLE);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(dateMills);
+        mDatePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                mDateTime.setYear(year);
+                mDateTime.setMonth(monthOfYear);
+                mDateTime.setDay(dayOfMonth);
+            }
+        });
+    }
 
 
     @Override

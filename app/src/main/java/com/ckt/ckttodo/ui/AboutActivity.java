@@ -27,6 +27,9 @@ public class AboutActivity extends AppCompatActivity {
                 onBackPressed();
                 break;
         }
+
+
+
         return super.onOptionsItemSelected(item);
     }
 }

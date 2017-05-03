@@ -14,4 +14,9 @@
     <color name="background_red">#FF0000</color>
     <color name="color_8B0000">#8B0000</color>
     <color name="textColorWhite">#FFFFFF</color>
+    <color name="login_background">#F5F5F5</color>
+    <color name="login_null">#FFFFFF</color>
+    <color name="login_btn_press">#C0C0C0</color>
+    <color name="login_btn">#239AD9</color>
+    <color name="register_edt_back">#D3D3D3</color>
 </resources>

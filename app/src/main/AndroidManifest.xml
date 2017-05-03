@@ -15,7 +15,7 @@
     <application
         android:name=".util.MyApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -24,25 +24,32 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity android:name=".ui.AboutActivity" />
         <activity
             android:name=".ui.ChartActivity"
             android:label="@string/dataCount" />
         <activity android:name=".ui.VoiceActivity" />
-
-        <activity
-            android:name=".ui.LoginActivity"
-            android:label="@string/login" />
-        <activity
-            android:name=".ui.SignUpActivity"
-            android:label="@string/new_account_sign_up" />
         <activity android:name=".ui.NewExamActivity" />
+        <activity android:name=".ui.RegisterActivity" />
+        <activity android:name=".ui.LoginActivity">
+
+        </activity>
+        <activity android:name=".ui.WelcomeActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
