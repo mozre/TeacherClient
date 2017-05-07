@@ -117,6 +117,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     @Override
+    public void makeMessage(String message) {
+
+    }
+
+    @Override
     public void changeViewMode(Boolean check) {
         if (check) {
             mEditTextUsername.setError("此用戶名已存在");

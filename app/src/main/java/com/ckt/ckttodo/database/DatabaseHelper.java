@@ -28,28 +28,28 @@ public class DatabaseHelper {
     private Realm mRealm;
 
     private DatabaseHelper(Context context) {
-       try {
-           Log.e(TAG,"DatabaseHelper configuration ");
-           RealmConfiguration configuration = new RealmConfiguration.Builder(context)
-                   .name(RealmConfiguration.DEFAULT_REALM_NAME)
-                   .schemaVersion(3)
-                   .deleteRealmIfMigrationNeeded()
-                   .build();
-           Realm.migrateRealm(configuration, new RealmMigration() {
-               @Override
-               public long execute(Realm realm, long version) {
-                   // version 0
-                   if (0 == version) {
-                       Log.e(TAG,"migrateRealm version = "+version);
-                       // do some chang
-                       version++;
-                   }
-                   return version;
-               }
-           });
+        try {
+            Log.e(TAG, "DatabaseHelper configuration ");
+            RealmConfiguration configuration = new RealmConfiguration.Builder(context)
+                    .name(RealmConfiguration.DEFAULT_REALM_NAME)
+                    .schemaVersion(3)
+                    .deleteRealmIfMigrationNeeded()
+                    .build();
+            Realm.migrateRealm(configuration, new RealmMigration() {
+                @Override
+                public long execute(Realm realm, long version) {
+                    // version 0
+                    if (0 == version) {
+                        Log.e(TAG, "migrateRealm version = " + version);
+                        // do some chang
+                        version++;
+                    }
+                    return version;
+                }
+            });
             mRealm = Realm.getInstance(configuration);
         } catch (RealmMigrationNeededException e) {
-           Log.e(TAG,"RealmMigrationNeededException e = "+e.getMessage());
+            Log.e(TAG, "RealmMigrationNeededException e = " + e.getMessage());
 //            mRealm = null;
 //
 //            mRealm = Realm.getInstance(context);
@@ -214,6 +214,9 @@ public class DatabaseHelper {
             throw new IllegalArgumentException("Realm object cannot be null.");
         }
     }
+
+
+
 
     //Get the realm PrimaryKey id by UUID
     public static String getPrimaryKeyId() {

@@ -201,7 +201,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mRadioButtonC.setEnabled(isEditable);
         mRadioButtonCpp.setEnabled(isEditable);
         mRadioButtonPython.setEnabled(isEditable);
-        if(isEditable){
+        if (isEditable) {
             mButtonSave.setVisibility(View.VISIBLE);
             mButtonSubmit.setVisibility(View.VISIBLE);
         }
@@ -225,10 +225,10 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         } else {
             mEditTextOutputArgs.setText(" ");
         }
-        if (data.getExam_remark() != null &&data.getExam_remark().replace(" ", "").length() > 0) {
+        if (data.getExam_remark() != null && data.getExam_remark().replace(" ", "").length() > 0) {
 
             mEditTextRemake.setText(data.getExam_remark());
-        }else {
+        } else {
             mEditTextRemake.setText("");
         }
         mTextViewDeadline.setText(TranserverUtil.millsToDate(data.getExam_deadline()));
@@ -249,7 +249,6 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         }
 
 
-
         if (isShowButton) {
             mButtonSave.setVisibility(View.VISIBLE);
             mButtonSubmit.setVisibility(View.VISIBLE);
@@ -257,7 +256,6 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             mButtonSave.setVisibility(View.GONE);
             mButtonSubmit.setVisibility(View.GONE);
         }
-
 
 
     }
@@ -288,19 +286,18 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             return;
         }
 
-
         mPostdata.setExam_title(mEditTextTitle.getText().toString());
-        if (TextUtils.isEmpty(mEditTextContent.getText())) {
+        if (!TextUtils.isEmpty(mEditTextContent.getText())) {
             mPostdata.setExam_content(mEditTextContent.getText().toString());
         }
-        if (TextUtils.isEmpty(mEditTextInputArags.getText())) {
+        if (!TextUtils.isEmpty(mEditTextInputArags.getText())) {
             mPostdata.setExam_in_arg(mEditTextInputArags.getText().toString());
         }
-        if (TextUtils.isEmpty(mEditTextOutputArgs.getText())) {
+        if (!TextUtils.isEmpty(mEditTextOutputArgs.getText())) {
             mPostdata.setExam_out_arg(mEditTextOutputArgs.getText().toString());
         }
         mPostdata.setExam_deadline(mCalendar.getTimeInMillis());
-        if (TextUtils.isEmpty(mEditTextRemake.getText())) {
+        if (!TextUtils.isEmpty(mEditTextRemake.getText())) {
             mPostdata.setExam_remark(mEditTextRemake.getText().toString());
         }
 
@@ -308,18 +305,21 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent();
 
         if (isSubmit) {
-            //TODO 上传至服务器
             mPostdata.setStatus(PostTaskData.STATUS_DATA_PASS);
 
         } else {
             mPostdata.setStatus(PostTaskData.STATUS_DATA_SAVE);
         }
-
+        mPostdata.setExam_update_time(System.currentTimeMillis());
         mPostdata.setExam_id(TranserverUtil.getUUID());
         mHelper.insert(mPostdata);
 
         intent.putExtra(PASS_ID, mPostdata.getExam_id());
         intent.putExtra(PASS_PROTAL, mPassProtal);
+
+        //TODO
+//        NewExamPresenter presenter = new NewExamPresenter(this);
+//        presenter.postNewArticleMessage(mPostdata, MessageDispatcher.getHandler());
         setResult(BACK_FROM_NEW_EXAM_RESULT_CODE, intent);
         finish();
     }
@@ -346,6 +346,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {

@@ -1,7 +1,5 @@
 package com.ckt.ckttodo.util;
 
-import com.ckt.ckttodo.database.EventTask;
-import com.ckt.ckttodo.database.Plan;
 import com.ckt.ckttodo.database.PostTaskData;
 
 import java.text.SimpleDateFormat;
@@ -31,24 +29,6 @@ public class TranserverUtil {
         return (new SimpleDateFormat(DATE_FORMAT)).format(calendar.getTime());
     }
 
-    public static void transEventTask(EventTask newTask, EventTask task) {
-        newTask.setTaskId(task.getTaskId());
-        newTask.setTaskTitle(task.getTaskTitle());
-        newTask.setTaskContent(task.getTaskContent());
-        newTask.setCreateUerId(task.getCreateUerId());
-        newTask.setExecUserId(task.getExecUserId());
-        newTask.setTaskType(task.getTaskType());
-        newTask.setTaskPriority(task.getTaskPriority());
-        newTask.setTaskStatus(task.getTaskStatus());
-        newTask.setTaskStartTime(task.getTaskStartTime());
-        newTask.setTaskPredictTime(task.getTaskPredictTime());
-        newTask.setTaskRemindTime(task.getTaskRemindTime());
-        newTask.setTaskRealSpendTime(task.getTaskRealSpendTime());
-        newTask.setPlanId(task.getPlanId());
-        newTask.setTaskUpdateTime(task.getTaskUpdateTime());
-        newTask.setTopNumber(task.getTopNumber());
-        newTask.setPlan(task.getPlan());
-    }
     public static void transPostTask(PostTaskData newTask, PostTaskData task) {
         newTask.setExam_id(task.getExam_id());
         newTask.setExam_title(task.getExam_title());
@@ -117,12 +97,6 @@ public class TranserverUtil {
         return builder.toString();
     }
 
-    public static String filterPlanName(Plan plan) {
-        if (plan == null) {
-            return "无";
-        }
-        return plan.getPlanName();
-    }
 
 
 

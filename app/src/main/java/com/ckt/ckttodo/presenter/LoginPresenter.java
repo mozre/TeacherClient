@@ -6,6 +6,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ckt.ckttodo.Base.BasePresenter;
+import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.ui.LoginView;
 import com.ckt.ckttodo.util.HttpUtils;
 
@@ -17,7 +18,6 @@ import okhttp3.Response;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -28,6 +28,9 @@ public class LoginPresenter extends BasePresenter {
     private static final String TAG = "LoginPresenter";
     private Context mContext;
     private LoginView mLoginView;
+
+    private static final String RESULT_CODE = "resultcode";
+    private static final String TOKEN = "token";
 
     public LoginPresenter(Context mContext, LoginView mLoginView) {
         this.mContext = mContext;
@@ -59,32 +62,8 @@ public class LoginPresenter extends BasePresenter {
                     }
                 })
                 .subscribeOn(Schedulers.io())
-                .map(new Func1<String, Boolean>() {
-                    @Override
-                    public Boolean call(String s) {
-                        JSONObject object = JSON.parseObject(s);
-                        boolean result = object.getBoolean("result");
-                        Log.d(TAG, "call: result = " + result + "   " + object);
-                        if (result) {
-//                            User user = new User(mContext);
-//                            String userInfo = object.getString("userinfo");
-//                            JSONObject obj = JSON.parseObject(userInfo);
-//                            user.setUserName(obj.getString("userName"));
-//                            user.setMail(obj.getString("mail"));
-//                            user.setPhone(obj.getString("phone"));
-//                            user.setUserIconAddress(obj.getString("userIconAddress"));
-//                            user.setToken(obj.getString("token"));
-//                            JSONObject show = new JSONObject();
-//                            show.put("show", user);
-//                            Log.d(TAG, "------------------call: show = " + show.toJSONString());
-//                            String token = object.getString("token");
-//                            return token;
-                        }
-                        return result;
-                    }
-                })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Boolean>() {
+                .subscribe(new Subscriber<String>() {
                     @Override
                     public void onCompleted() {
 
@@ -92,15 +71,27 @@ public class LoginPresenter extends BasePresenter {
 
                     @Override
                     public void onError(Throwable e) {
-
+                        e.printStackTrace();
                     }
 
                     @Override
-                    public void onNext(Boolean rs) {
-                        if (rs) {
-                            mLoginView.startHomeView();
-                        } else {
-                            mLoginView.errorUserInfo();
+                    public void onNext(String rs) {
+
+                        JSONObject object = JSON.parseObject(rs);
+                        int result = object.getInteger(RESULT_CODE);
+                        switch (result) {
+                            case HttpUtils.SUCCESS_REPONSE_CODE:
+                                User user = new User(mContext);
+                                String token = object.getString(TOKEN);
+                                if (token != null) {
+                                    user.setToken(token);
+                                    mLoginView.startHomeView();
+                                }
+                                break;
+                            case HttpUtils.FAIL_ILLEGAL_USER_RESPONSE_CODE:
+                            case HttpUtils.FALL_ILLEGAL_PASSWORD_RESPONSE_CODE:
+                                mLoginView.errorUserInfo();
+                                break;
                         }
                     }
                 });

@@ -119,8 +119,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void startHomeView() {
 //        Intent intent = new Intent(this, HomeActivity.class);
 //        startActivity(intent);
+        setResult(LOGIN_RESULT_CODE);
+        finish();
     }
 
 
+    @Override
+    public void makeMessage(String message) {
+
+    }
 }
 

@@ -25,6 +25,12 @@ public class PostTaskData extends RealmObject {
     private int status;
     private int topNumber = -1;
 
+
+    public static final int TOP_ONE = 1;
+    public static final int TOP_TWO = 2;
+    public static final int TOP_THREE = 3;
+    public static final int TOP_NORMAL = -1;
+
     public static final int LAN_C = 1;
     public static final int LAN_CPP = 2;
     public static final int LAN_PYTHON = 3;
@@ -33,6 +39,8 @@ public class PostTaskData extends RealmObject {
     public static final int STATUS_DATA_PASS = 2;
 
     public static final String EXAM_ID = "exam_id";
+    public static final String EXAM_UPDATE_TIME = "exam_update_time";
+    public static final String EXAM_DEADLINE = "exam_deadline";
 
     public String getExam_id() {
         return exam_id;

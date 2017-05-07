@@ -2,7 +2,6 @@ package com.ckt.ckttodo.ui;
 
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +11,8 @@ import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -24,7 +25,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.transition.Visibility;
@@ -37,14 +37,16 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.ckt.ckttodo.Base.BaseActivity;
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
 import com.ckt.ckttodo.database.PostTaskData;
-import com.ckt.ckttodo.database.Project;
 import com.ckt.ckttodo.databinding.ActivityMainBinding;
-import com.ckt.ckttodo.util.Constant;
 import com.ckt.ckttodo.util.Constants;
+import com.ckt.ckttodo.util.HttpUtils;
+import com.ckt.ckttodo.util.MessageDispatcher;
 import com.ckt.ckttodo.util.PermissionUtil;
+import com.ckt.ckttodo.util.TranserverUtil;
 import com.ckt.ckttodo.widgt.ContentDialog;
 
 import java.util.ArrayList;
@@ -56,19 +58,29 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, InProgressTaskFragment.ShowMainMenuItem, FinishedTaskFragment.ShowMainMenuItem, WillPublishTaskFragment.ShowMainMenuItem, ActivityCompat.OnRequestPermissionsResultCallback {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, InProgressTaskFragment.ShowMainMenuItem,
+        FinishedTaskFragment.ShowMainMenuItem, WillPublishTaskFragment.ShowMainMenuItem, ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String TAG = "main";
     public static final String PLAN_ID = "planId";
     public static final String SHARE_PREFERENCES_NAME = "com.ckt.ckttodo";
     private static final String IS_FIRST_CHECK_PERMISSION = "permission_status";
     private static final int REQUEST_PERMISSIONS = 1;
-    public final static int MAIN_TO_NEW_TASK_CODE = 100;
-    public final static int MAIN_TO_TASK_DETAIL_CODE = 200;
-    public final static int WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE = 300;
-    public final static int IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE = 400;
-    public final static int FINISHED_TO_NEW_EXAM_REQUEST_CODE = 500;
-    public final static int LOGIN_OUT_RESULT_CODE = 21;
-    public final static int FINSH_ACTIVITY_RESULT_CODE = 22;
+    public static final int MAIN_TO_NEW_TASK_CODE = 100;
+    public static final int MAIN_TO_TASK_DETAIL_CODE = 200;
+    public static final int WILL_PUBLISH_TO_NEW_EXAM_REQUEST_CODE = 300;
+    public static final int IN_PROGRESS_TO_NEW_EXAM_REQUEST_CODE = 400;
+    public static final int FINISHED_TO_NEW_EXAM_REQUEST_CODE = 500;
+    public static final int LOGIN_OUT_RESULT_CODE = 21;
+    public static final int FINSH_ACTIVITY_RESULT_CODE = 22;
+
+    public static final int PUSHLISH_NEW_EXAM_FAIL = 31;
+    public static final int PUSHLISH_NEW_EXAM_SUCCESS = 32;
+    public static final int SAVE_NEW_EXAM_SUCCESS = 33;
+
+    public static final int DELETE = 1;
+    public static final int ADD = 2;
+
+
     private ActivityMainBinding mActivityMainBinding;
     private MenuItem mMenuItemSure;
     private MenuItem mMenuItemFalse;
@@ -145,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            finish();
 //        }
         super.onCreate(savedInstanceState);
+        MessageDispatcher.initMessageDispatcher(new Messagehandler());
         mFragmentList = new ArrayList<>();
         mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         initUI();
@@ -219,33 +232,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         };
 
-//        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-//            @Override
-//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//
-//            }
-//
-//            @Override
-//            public void onPageSelected(int position) {
-//                switch (position) {
-//                    case 0:
-//                        mActivityMainBinding.appBarMain.fab.setVisibility(View.INVISIBLE);
-//                        mActivityMainBinding.appBarMain.fam.setVisibility(View.VISIBLE);
-//                        break;
-//                    case 1:
-//                    case 2:
-//                        mActivityMainBinding.appBarMain.fam.collapse();
-//                        mActivityMainBinding.appBarMain.fab.setVisibility(View.VISIBLE);
-//                        mActivityMainBinding.appBarMain.fam.setVisibility(View.INVISIBLE);
-//                }
-//            }
-//
-//            @Override
-//            public void onPageScrollStateChanged(int state) {
-//
-//            }
-//        });
-        Log.d(TAG, "initUI: requestcode = ");
 
         mViewPager.setAdapter(fragmentPagerAdapter);
         TabLayout tabLayout = mActivityMainBinding.appBarMain.contentMain.tabLayout;
@@ -259,61 +245,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
-        mActivityMainBinding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                switch (mViewPager.getCurrentItem()) {
-                    case 0:
-                        //                        getTheVoiceInput();
-                        break;
-                    case 1:
-                        Log.e(TAG, "project click");
-                        View editTextView = getLayoutInflater().inflate(R.layout.dialog_edittext, null);
-                        final EditText editText = (EditText) editTextView.findViewById(R.id.new_task_name);
-                        editText.setFocusable(true);
-                        editText.setFocusableInTouchMode(true);
-                        editText.requestFocus();
-                        Timer timer = new Timer();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                InputMethodManager inputManager = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                inputManager.showSoftInput(editText, 0);
-                            }
-                        }, 200);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this).setTitle(R.string.new_project).setView(editTextView).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                final String projectName = editText.getText().toString().trim();
-                                for (Project project : DatabaseHelper.getInstance(MainActivity.this).findAll(Project.class)) {
-                                    if (projectName.equals(project.getProjectTitle())) {
-                                        showToast(getResources().getString(R.string.project_exist));
-                                        return;
-                                    }
-                                }
-                                if (!projectName.equals("")) {
-                                    Project project = new Project();
-                                    project.setProjectId(UUID.randomUUID().toString());
-                                    project.setProjectTitle(projectName);
-                                    Date date = new Date();
-                                    project.setCreateTime(date.getTime());
-                                    project.setEndTime(date.getTime());
-                                    project.setLastUpdateTime(date.getTime());
-                                    DatabaseHelper.getInstance(MainActivity.this).insert(project);
-                                } else {
-                                    showToast(getResources().getString(R.string.plan_not_null));
-                                }
-                            }
-                        }).setNegativeButton(R.string.cancel, null);
-                        builder.create().show();
-
-                        break;
-                    case 2:
-
-                        break;
-                }
-            }
-        });
     }
 
     private void getTheVoiceInput() {
@@ -457,6 +388,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onDestroy() {
+        MessageDispatcher.clearHandler();
         super.onDestroy();
     }
 
@@ -474,6 +406,44 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    public class Messagehandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == PUSHLISH_NEW_EXAM_FAIL) {
+                String id = (String) msg.obj;
+                PostTaskData postTaskData = new PostTaskData();
+                PostTaskData oldPostTaskData = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
+                TranserverUtil.transPostTask(postTaskData, oldPostTaskData);
+                postTaskData.setStatus(PostTaskData.STATUS_DATA_SAVE);
+                mHelper.update(postTaskData);
+                mWillPublishFragment.notifyData();
+                mFinishedFragment.notifyData();
+                mInProgressTaskFragment.notifyData();
+                Toast.makeText(MainActivity.this, "网络请求错误！", Toast.LENGTH_SHORT).show();
+            } else if (msg.what == PUSHLISH_NEW_EXAM_SUCCESS) {
+                Toast.makeText(MainActivity.this, "发布成功！", Toast.LENGTH_SHORT).show();
+            } else if (msg.what == MainActivity.SAVE_NEW_EXAM_SUCCESS) {
+                Toast.makeText(MainActivity.this, "保存成功！", Toast.LENGTH_SHORT).show();
+            } else if (msg.what == HttpUtils.FAIL_ILLEGAL_USER_RESPONSE_CODE || msg.what == HttpUtils.FALL_TIMEOUT_TOKEN_RESPONSE_CODE) {
+                String id = (String) msg.obj;
+                PostTaskData postTaskData = new PostTaskData();
+                PostTaskData oldPostTaskData = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
+                TranserverUtil.transPostTask(postTaskData, oldPostTaskData);
+                postTaskData.setStatus(PostTaskData.STATUS_DATA_SAVE);
+                mHelper.update(postTaskData);
+                mWillPublishFragment.notifyData();
+                mFinishedFragment.notifyData();
+                mInProgressTaskFragment.notifyData();
+                Toast.makeText(MainActivity.this, "登录已过期！", Toast.LENGTH_SHORT).show();
+                setResult(LOGIN_OUT_RESULT_CODE);
+                finish();
+            }
+            super.handleMessage(msg);
+        }
     }
 
 
