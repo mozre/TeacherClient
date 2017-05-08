@@ -1,9 +1,7 @@
 package com.ckt.ckttodo.ui;
 
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -28,19 +26,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.transition.Fade;
 import android.transition.Visibility;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ckt.ckttodo.Base.BaseActivity;
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
 import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.databinding.ActivityMainBinding;
 import com.ckt.ckttodo.util.Constants;
 import com.ckt.ckttodo.util.HttpUtils;
@@ -51,11 +48,7 @@ import com.ckt.ckttodo.widgt.ContentDialog;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
 
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, InProgressTaskFragment.ShowMainMenuItem,
@@ -98,16 +91,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        if (resultCode == NewTaskActivity.NEW_TASK_SUCCESS_RESULT_CODE) {
-//            mInProgressTaskFragment.notifyData();
-//        } else if (resultCode == TaskDetailActivity.TASK_DETAIL_MAIN_RESULT_CODE) {
-//            if (data != null) {
-//                boolean shouldUpdateData = data.getBooleanExtra(TaskDetailActivity.IS_TASK_DETAIL_MODIFY, false);
-//                if (shouldUpdateData) {
-//                    mInProgressTaskFragment.notifyData();
-//                }
-//            }
-//        }
         if (resultCode == NewExamActivity.BACK_FROM_NEW_EXAM_RESULT_CODE) {
 
             String id = data.getStringExtra(NewExamActivity.PASS_ID);
@@ -150,12 +133,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        Log.d("mozre", "onCreate: " + getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE).getBoolean(WelcomeActivity.IS_LOGIN, false));
-//
-//        if (!getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE).getBoolean(WelcomeActivity.IS_LOGIN, false)) {
-//            setResult(LOGIN_OUT_RESULT_CODE);
-//            finish();
-//        }
         super.onCreate(savedInstanceState);
         MessageDispatcher.initMessageDispatcher(new Messagehandler());
         mFragmentList = new ArrayList<>();
@@ -174,7 +151,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         boolean isFirstTime = preferences.getBoolean(IS_FIRST_CHECK_PERMISSION, true);
         if (isFirstTime) {
             getTheVoiceInput();
-            preferences.edit().putBoolean(IS_FIRST_CHECK_PERMISSION, false).commit();
+            preferences.edit().putBoolean(IS_FIRST_CHECK_PERMISSION, false).apply();
         }
 
     }
@@ -189,9 +166,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         DrawerLayout drawer = mActivityMainBinding.drawerLayout;
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         toggle.syncState();
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
 
         NavigationView navigationView = mActivityMainBinding.navView;
+        TextView textViewUsername = (TextView) navigationView.getHeaderView(0).findViewById(R.id.tv_userName);
+        textViewUsername.setText(new User(this).getUserName());
         navigationView.setNavigationItemSelectedListener(this);
 
         mViewPager = mActivityMainBinding.appBarMain.contentMain.viewPager;
@@ -241,6 +220,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             @Override
             public void onClick(View v) {
                 startActivityForResult(new Intent(MainActivity.this, NewExamActivity.class), MAIN_TO_NEW_TASK_CODE);
+                mActivityMainBinding.appBarMain.fam.collapse();
             }
         });
 
@@ -345,10 +325,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 break;
         }
 
-        //noinspection SimplifiableIfStatement
-        //        if (id == R.id.action_settings) {
-        //            return true;
-        //        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -447,8 +423,4 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
 
-//    @Override
-//    public void notifyTask() {
-//        mInProgressTaskFragment.notifyData();
-//    }
 }

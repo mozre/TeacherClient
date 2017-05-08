@@ -34,7 +34,6 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="28dp"
             android:layout_toRightOf="@+id/tv_userIcon"
-            android:text="Sink"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp"
             android:textColor="@android:color/white"/>
@@ -44,11 +43,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="45dp"
-            android:layout_toRightOf="@+id/tv_userIcon"
-            android:text="lovesink@qq.com"
             android:textSize="15sp"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white"
+            android:layout_below="@+id/tv_userName"
+            android:layout_alignStart="@+id/tv_userName" />
     </RelativeLayout>
 
 
