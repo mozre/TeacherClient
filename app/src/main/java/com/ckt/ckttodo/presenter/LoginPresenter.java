@@ -29,7 +29,7 @@ public class LoginPresenter extends BasePresenter {
     private Context mContext;
     private LoginView mLoginView;
 
-    private static final String RESULT_CODE = "resultcode";
+    private static final String RESULT_CODE = "resultCode";
     private static final String TOKEN = "token";
 
     public LoginPresenter(Context mContext, LoginView mLoginView) {
@@ -71,6 +71,7 @@ public class LoginPresenter extends BasePresenter {
 
                     @Override
                     public void onError(Throwable e) {
+                        mLoginView.errorNetwork();
                         e.printStackTrace();
                     }
 
@@ -85,6 +86,7 @@ public class LoginPresenter extends BasePresenter {
                                 String token = object.getString(TOKEN);
                                 if (token != null) {
                                     user.setToken(token);
+                                    user.setUserName(object.getString("username"));
                                     mLoginView.startHomeView();
                                 }
                                 break;

@@ -1,6 +1,7 @@
 package com.ckt.ckttodo.presenter;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -9,7 +10,7 @@ import com.ckt.ckttodo.Base.BasePresenter;
 import com.ckt.ckttodo.Base.CommonFragmentView;
 import com.ckt.ckttodo.database.DataBaseUtil;
 import com.ckt.ckttodo.database.DatabaseHelper;
-import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.util.HttpUtils;
 
@@ -77,16 +78,16 @@ public class PostDetailPresenter extends BasePresenter {
                 .map(new Func1<String, Integer>() {
                     @Override
                     public Integer call(String s) {
-//                        Log.d(TAG, "call: " + s);
+                        Log.d(TAG, "call: " + s);
                         JSONObject object = JSON.parseObject(s);
-                        List<PostTaskData> mDatas = null;
-                        List<PostTaskData> results = null;
+                        List<Exam> mDatas = null;
+                        List<Exam> results = null;
                         Integer resultCode = object.getInteger(HttpUtils.RESULT_CODE);
                         if (resultCode != null) {
                             switch (resultCode) {
                                 case HttpUtils.SUCCESS_REPONSE_CODE:
                                     String datasStr = object.getString("datas");
-                                    mDatas = new ArrayList<>(JSONArray.parseArray(datasStr, PostTaskData.class));
+                                    mDatas = new ArrayList<>(JSONArray.parseArray(datasStr, Exam.class));
                                     saveData(mDatas);
                                     return HttpUtils.SUCCESS_REPONSE_CODE;
 
@@ -133,11 +134,11 @@ public class PostDetailPresenter extends BasePresenter {
 
     }
 
-    private void saveData(List<PostTaskData> mDatas) {
-        List<PostTaskData> updateList = new ArrayList<>();
-        List<PostTaskData> inserList = new ArrayList<>();
+    private void saveData(List<Exam> mDatas) {
+        List<Exam> updateList = new ArrayList<>();
+        List<Exam> inserList = new ArrayList<>();
 
-        for (PostTaskData data : mDatas) {
+        for (Exam data : mDatas) {
 
             if (DataBaseUtil.checkObjectExists(mHelper, data.getExam_id())) {
                 updateList.add(data);

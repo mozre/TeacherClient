@@ -26,11 +26,11 @@ public class HttpUtils {
 
     public static Request.Builder getCommonBuilder(String interfaceName) {
 
-        return new Request.Builder().url(Constant.SERVER_HOST + interfaceName);
+        return new Request.Builder().url(ServerHost.SERVER_HOST + interfaceName);
     }
 
     public static String getCurrentURI(String path) {
-        path =  GlobalConfig.SERVER_HOST + "/image? =" + path;
+        path =  ServerHost.SERVER_HOST + "/image? =" + path;
         return path;
     }
 

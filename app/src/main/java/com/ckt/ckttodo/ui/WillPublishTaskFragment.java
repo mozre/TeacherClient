@@ -21,7 +21,7 @@ import android.widget.Toast;
 import com.ckt.ckttodo.Base.CommonFragmentView;
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
-import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.databinding.FragmentTaskBinding;
 import com.ckt.ckttodo.databinding.TaskListItemBinding;
 import com.ckt.ckttodo.presenter.PostDetailPresenter;
@@ -49,13 +49,13 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private EndlessRecyclerView mRecyclerView;
     private TaskRecyclerViewAdapter mAdapter;
-    private List<PostTaskData> mTasks = new ArrayList<>();
-    private LinkedList<PostTaskData> mShowTasks;
-    private LinkedList<PostTaskData> mTopTasks = new LinkedList<>();
+    private List<Exam> mTasks = new ArrayList<>();
+    private LinkedList<Exam> mShowTasks;
+    private LinkedList<Exam> mTopTasks = new LinkedList<>();
     private static boolean isShowCheckBox = false;
     private Map<Integer, Boolean> mItemsSelectStatus = new HashMap<>();
     private ShowMainMenuItem mShowMenuItem;
-    private DatabaseHelper mHelper;
+    private DatabaseHelper mHelper = DatabaseHelper.getInstance(getContext());
     private Context mContext;
 
     @Override
@@ -81,30 +81,33 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
     private View init(LayoutInflater inflater) {
         mShowTasks = new LinkedList<>();
-        mHelper = DatabaseHelper.getInstance(getContext());
         getFistDataList();
         mFragmentTaskBinding = FragmentTaskBinding.inflate(inflater);
         mRecyclerView = mFragmentTaskBinding.recyclerTaskList;
         mSwipeRefreshLayout = mFragmentTaskBinding.commonHomeFragmentRefresh;
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        mRecyclerView.setOnLoadMoreListener(this);
+//        mSwipeRefreshLayout.setOnRefreshListener(this);
+//        mRecyclerView.setOnLoadMoreListener(this);
+        mSwipeRefreshLayout.setEnabled(false);
+        mRecyclerView.enable(false);
         mAdapter = new TaskRecyclerViewAdapter();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.addItemDecoration(new TaskDividerItemDecoration(getContext(),
                 TaskDividerItemDecoration.VERTICAL_LIST));
         mRecyclerView.setAdapter(mAdapter);
+
+
         return mFragmentTaskBinding.getRoot();
     }
 
 
-    private void screenTask(List<PostTaskData> tasks) {
+    private void screenTask(List<Exam> tasks) {
         if (mShowTasks == null) {
             mShowTasks = new LinkedList<>();
         }
         mShowTasks.clear();
         mTopTasks.clear();
         long now = Calendar.getInstance().getTimeInMillis();
-        for (PostTaskData task : tasks) {
+        for (Exam task : tasks) {
             if (task.getTopNumber() > 0) {
                 mTopTasks.add(task);
                 continue;
@@ -114,7 +117,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
         sortTop(mTopTasks);
     }
 
-    private void sortTop(LinkedList<PostTaskData> list) {
+    private void sortTop(LinkedList<Exam> list) {
         if (list.size() == 0) {
             return;
         }
@@ -122,7 +125,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
             mShowTasks.addFirst(list.get(0));
             return;
         }
-        PostTaskData tmpTask;
+        Exam tmpTask;
         for (int i = 0; i < list.size(); i++) {
             for (int j = i + 1; j < list.size(); ++j) {
                 if (list.get(j).getTopNumber() > list.get(i).getTopNumber()) {
@@ -220,7 +223,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
         TextView textViewSpendTime;
         ImageButton imageButtonStatus;
         CheckBox checkBox;
-        PostTaskData mTask;
+        Exam mTask;
         TextView textViewToTop;
         private TaskListItemBinding mBinding;
 
@@ -247,7 +250,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
         }
 
 
-        public void setData(PostTaskData data) {
+        public void setData(Exam data) {
             this.mTask = data;
             mBinding.setTask(data);
             mBinding.executePendingBindings();
@@ -316,8 +319,8 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
     private void setTaskCancelTop(int position) {
 
-        PostTaskData eventTask = copyTask(mShowTasks.get(position));
-        eventTask.setTopNumber(PostTaskData.TOP_NORMAL);
+        Exam eventTask = copyTask(mShowTasks.get(position));
+        eventTask.setTopNumber(Exam.TOP_NORMAL);
         mHelper.update(eventTask);
         mShowMenuItem.setShowMenuItem(false);
         isShowCheckBox = false;
@@ -332,9 +335,9 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
      * @param position
      */
     private void setTaskToTop(Integer position) {
-        List<PostTaskData> adjustList = null;
-        PostTaskData newTopTask = copyTask(mShowTasks.get(position));
-        newTopTask.setTopNumber(PostTaskData.TOP_THREE);
+        List<Exam> adjustList = null;
+        Exam newTopTask = copyTask(mShowTasks.get(position));
+        newTopTask.setTopNumber(Exam.TOP_THREE);
         adjustList = adjustOrder(mShowTasks.get(position).getTopNumber());
         adjustList.add(newTopTask);
         for (int i = 0; i < adjustList.size(); ++i) {
@@ -345,10 +348,10 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
         mAdapter.customDeleteNotifyDataSetChanged();
     }
 
-    private List<PostTaskData> adjustOrder(Integer topNumber) {
-        List<PostTaskData> tmpList = new ArrayList<>();
-        PostTaskData tmpTask;
-        PostTaskData resultTask = null;
+    private List<Exam> adjustOrder(Integer topNumber) {
+        List<Exam> tmpList = new ArrayList<>();
+        Exam tmpTask;
+        Exam resultTask = null;
         for (int i = 0; i < mTopTasks.size(); ++i) {
             tmpTask = mTopTasks.get(i);
             if (tmpTask.getTopNumber() == topNumber) {
@@ -356,8 +359,8 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
             }
             if (tmpTask.getTopNumber() > 0) {
                 resultTask = copyTask(tmpTask);
-                if (resultTask.getTopNumber() == PostTaskData.TOP_ONE) {
-                    resultTask.setTopNumber(PostTaskData.TOP_NORMAL);
+                if (resultTask.getTopNumber() == Exam.TOP_ONE) {
+                    resultTask.setTopNumber(Exam.TOP_NORMAL);
 
                 } else {
 
@@ -371,8 +374,8 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     }
 
 
-    private PostTaskData copyTask(PostTaskData tmpTask) {
-        PostTaskData result = new PostTaskData();
+    private Exam copyTask(Exam tmpTask) {
+        Exam result = new Exam();
         result.setExam_id(tmpTask.getExam_id());
         result.setExam_title(tmpTask.getExam_title());
         result.setExam_content(tmpTask.getExam_content());
@@ -409,13 +412,13 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     public void finishDeleteAction(boolean isDelete) {
         isShowCheckBox = false;
         if (isDelete) {
-            List<PostTaskData> tasks = new ArrayList<>();
+            List<Exam> tasks = new ArrayList<>();
             for (int position : mItemsSelectStatus.keySet()) {
                 if (mItemsSelectStatus.get(position)) {
                     tasks.add(mShowTasks.get(position));
                 }
             }
-            for (PostTaskData task1 : tasks) {
+            for (Exam task1 : tasks) {
                 mHelper.delete(task1);
             }
             mAdapter.customDeleteNotifyDataSetChanged();
@@ -426,16 +429,16 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
     public void finishTaskAction() {
         isShowCheckBox = false;
-        List<PostTaskData> tasks = new ArrayList<>();
+        List<Exam> tasks = new ArrayList<>();
         for (int position : mItemsSelectStatus.keySet()) {
             if (mItemsSelectStatus.get(position)) {
                 tasks.add(mShowTasks.get(position));
             }
         }
-        PostTaskData upDateTask = new PostTaskData();
-        for (PostTaskData task1 : tasks) {
+        Exam upDateTask = new Exam();
+        for (Exam task1 : tasks) {
             TranserverUtil.transPostTask(upDateTask, task1);
-            upDateTask.setStatus(PostTaskData.STATUS_DATA_PASS);
+            upDateTask.setStatus(Exam.STATUS_DATA_PASS);
             mHelper.update(upDateTask);
         }
         mAdapter.customDeleteNotifyDataSetChanged();
@@ -446,7 +449,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     public void onRefresh() {
         PostDetailPresenter presenter = new PostDetailPresenter(mContext, this, mHelper);
 
-        presenter.postArticleDetail(0, PostDetailPresenter.ACTION_PULL, PostTaskData.STATUS_DATA_SAVE);
+        presenter.postArticleDetail(0, PostDetailPresenter.ACTION_PULL, Exam.STATUS_DATA_SAVE);
         mRecyclerView.enable(false);
         mRecyclerView.setLoading(false);
     }
@@ -457,7 +460,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
         if (mShowTasks.size() > 0) {
             try {
-                presenter.postArticleDetail(mShowTasks.getLast().getExam_deadline(), PostDetailPresenter.ACTION_PUSH, PostTaskData.STATUS_DATA_SAVE);
+                presenter.postArticleDetail(mShowTasks.getLast().getExam_deadline(), PostDetailPresenter.ACTION_PUSH, Exam.STATUS_DATA_SAVE);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -516,13 +519,14 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
 
     private void getFistDataList() {
-        Iterator<PostTaskData> iterator = mHelper.getRealm().allObjectsSorted(PostTaskData.class, PostTaskData.EXAM_UPDATE_TIME, true).iterator();
+        Iterator<Exam> iterator = mHelper.getRealm().allObjectsSorted(Exam.class, Exam.EXAM_UPDATE_TIME, true).iterator();
         mTasks.clear();
         int i = PAGE_COUNT;
-        PostTaskData data;
+        Exam data;
         while (iterator.hasNext() && i != 1) {
             data = iterator.next();
-            if (data.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
+            int inn = data.getStatus();
+            if (data.getStatus() == Exam.STATUS_DATA_SAVE) {
                 mTasks.add(data);
                 --i;
             }
@@ -535,15 +539,15 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     }
 
     private void getMoreDataList() {
-        Iterator<PostTaskData> iterator = mHelper.getRealm().allObjectsSorted(PostTaskData.class, PostTaskData.EXAM_DEADLINE, false).iterator();
-        PostTaskData data = mShowTasks.getLast();
+        Iterator<Exam> iterator = mHelper.getRealm().allObjectsSorted(Exam.class, Exam.EXAM_DEADLINE, false).iterator();
+        Exam data = mShowTasks.getLast();
 
-        PostTaskData tmp;
+        Exam tmp;
         int i = 0;
         while (iterator.hasNext()) {
             tmp = iterator.next();
             if (tmp.getExam_update_time() < data.getExam_update_time()) {
-                if (tmp.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
+                if (tmp.getStatus() == Exam.STATUS_DATA_SAVE) {
                     mTasks.add(tmp);
                     i = 1;
                 }

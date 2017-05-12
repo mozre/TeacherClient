@@ -210,7 +210,7 @@
     <string name="registering">正在注册</string>
     <string name="edt_login_name">用户名</string>
     <string name="edt_login_password">密 码</string>
-    <string name="btn_register">注 册</string>
+    <string name="btn_register">设置IP</string>
     <string name="btn_login">登 录</string>
     <string name="edt_register_name">Username</string>
     <string name="edt_register_email">E-mail</string>

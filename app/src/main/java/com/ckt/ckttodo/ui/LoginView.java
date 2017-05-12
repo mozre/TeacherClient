@@ -9,4 +9,5 @@ import com.ckt.ckttodo.Base.BaseView;
 public interface LoginView extends BaseView {
     void startHomeView();
     void errorUserInfo();
+    void errorNetwork();
 }

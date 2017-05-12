@@ -3,9 +3,11 @@ package com.ckt.ckttodo.presenter;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ckt.ckttodo.Base.BasePresenter;
+import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.database.PostTaskData;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.ui.MainActivity;
@@ -35,23 +37,25 @@ public class NewExamPresenter extends BasePresenter {
     private static final String TAG = "NewMessagePresenter";
     private static final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/png");
     private static final String PATH_EXAM = "/exam";
-    private static final String RESULT_CODE = "resultcode";
+    private static final String RESULT_CODE = "resultCode";
     private Context mContext;
 
     public NewExamPresenter(Context mContext) {
         this.mContext = mContext;
     }
 
-    public void postNewArticleMessage(final PostTaskData mData, final Handler handler) {
+    public void postNewArticleMessage(final Exam mData, final Handler handler) {
         final User user = new User(mContext);
+        final PostTaskData postTaskData = new PostTaskData(mData);
+        JSONObject object = new JSONObject();
+        object.put("data", mData);
+        Log.d(TAG, "postNewArticleMessage: " + object.toJSONString());
         Observable
                 .create(new Observable.OnSubscribe<String>() {
                     @Override
                     public void call(final Subscriber<? super String> subscriber) {
-                        String username = user.getUserName();
-                        String token = user.getToken();
                         JSONObject object = new JSONObject();
-                        object.put("data", mData);
+                        object.put("data", postTaskData);
                         OkHttpClient client = HttpUtils.getClient();
                         RequestBody requestBody = null;
                         requestBody = new MultipartBody.Builder()
@@ -60,6 +64,7 @@ public class NewExamPresenter extends BasePresenter {
                                 .addFormDataPart("token", user.getToken())
                                 .addFormDataPart("data", object.toJSONString())
                                 .build();
+                        Log.d(TAG, "call: " + requestBody.toString());
                         final Request request = HttpUtils.getCommonBuilder(PATH_EXAM).post(requestBody).tag(NewExamPresenter.this).build();
                         client.newCall(request).enqueue(new Callback() {
                             @Override
@@ -73,7 +78,6 @@ public class NewExamPresenter extends BasePresenter {
                             }
                         });
 
-
                     }
                 })
                 .subscribeOn(Schedulers.io())
@@ -81,7 +85,7 @@ public class NewExamPresenter extends BasePresenter {
                     @Override
                     public Integer call(String resultStr) {
                         JSONObject jsonObject = JSONObject.parseObject(resultStr);
-                        int result = jsonObject.getInteger(RESULT_CODE);
+                        int result = Integer.valueOf(jsonObject.getInteger(RESULT_CODE));
                         return result;
                     }
                 })
@@ -106,7 +110,7 @@ public class NewExamPresenter extends BasePresenter {
                         Message msg = new Message();
                         if (o == HttpUtils.SUCCESS_REPONSE_CODE) {
 
-                            if (mData.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
+                            if (mData.getStatus() == Exam.STATUS_DATA_SAVE) {
                                 msg.what = MainActivity.SAVE_NEW_EXAM_SUCCESS;
                             } else {
                                 msg.what = MainActivity.PUSHLISH_NEW_EXAM_SUCCESS;

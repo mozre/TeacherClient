@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.ckt.ckttodo.R;
-import com.ckt.ckttodo.util.GlobalConfig;
+import com.ckt.ckttodo.util.ServerHost;
 
 import java.util.List;
 
@@ -64,10 +64,11 @@ public class ContentDialog extends Dialog implements View.OnClickListener {
         if (v == mButtonCancel) {
             dismiss();
         } else {
-            if (TextUtils.isEmpty(mEditTextIP.getText())) {
+            if (!TextUtils.isEmpty(mEditTextIP.getText())) {
                 String ip = mEditTextIP.getText().toString();
                 if (ip.replace(" ", "").length() > 0) {
-                    GlobalConfig.SERVER_HOST = ip;
+                    ServerHost host = new ServerHost(getContext());
+                    host.setmSaveServerHost(ServerHost.HTTP + ip + ServerHost.PORT_AND_PATH);
                 }
             }
             dismiss();

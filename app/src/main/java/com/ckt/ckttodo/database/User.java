@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
+import com.ckt.ckttodo.util.Constants;
+
 public class User {
 
     private String userId;
@@ -14,7 +16,7 @@ public class User {
     private static SharedPreferences sharedPreferences;
 
     public User(Context context) {
-        sharedPreferences = context.getSharedPreferences("userdata", Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE);
     }
 
     public User(String userName, String password) {

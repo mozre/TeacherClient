@@ -36,7 +36,7 @@ import android.widget.Toast;
 import com.ckt.ckttodo.Base.BaseActivity;
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
-import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.databinding.ActivityMainBinding;
 import com.ckt.ckttodo.util.Constants;
@@ -94,10 +94,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if (resultCode == NewExamActivity.BACK_FROM_NEW_EXAM_RESULT_CODE) {
 
             String id = data.getStringExtra(NewExamActivity.PASS_ID);
-            PostTaskData data1 = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
-            if (data1.getStatus() == PostTaskData.STATUS_DATA_SAVE) {
-
-                mWillPublishFragment.notifyData();
+            Exam data1 = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, id).findFirst();
+            if (data1.getStatus() == Exam.STATUS_DATA_SAVE) {
+                if (mWillPublishFragment != null) {
+                    mWillPublishFragment.notifyData();
+                }
 
             } else {
                 long now = Calendar.getInstance().getTimeInMillis();
@@ -219,8 +220,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mActivityMainBinding.appBarMain.addText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivityForResult(new Intent(MainActivity.this, NewExamActivity.class), MAIN_TO_NEW_TASK_CODE);
                 mActivityMainBinding.appBarMain.fam.collapse();
+                startActivityForResult(new Intent(MainActivity.this, NewExamActivity.class), MAIN_TO_NEW_TASK_CODE);
             }
         });
 
@@ -343,6 +344,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 transitionTo(new Intent(this, AboutActivity.class));
                 break;
             case R.id.nav_login_out:
+                mHelper.getRealm().clear(Exam.class);
                 setResult(LOGIN_OUT_RESULT_CODE);
                 finish();
                 break;
@@ -391,26 +393,33 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         public void handleMessage(Message msg) {
             if (msg.what == PUSHLISH_NEW_EXAM_FAIL) {
                 String id = (String) msg.obj;
-                PostTaskData postTaskData = new PostTaskData();
-                PostTaskData oldPostTaskData = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
-                TranserverUtil.transPostTask(postTaskData, oldPostTaskData);
-                postTaskData.setStatus(PostTaskData.STATUS_DATA_SAVE);
-                mHelper.update(postTaskData);
-                mWillPublishFragment.notifyData();
-                mFinishedFragment.notifyData();
-                mInProgressTaskFragment.notifyData();
+                Exam exam = new Exam();
+                Exam oldExam = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, id).findFirst();
+                TranserverUtil.transPostTask(exam, oldExam);
+                exam.setStatus(Exam.STATUS_DATA_SAVE);
+                mHelper.update(exam);
+                if (mInProgressTaskFragment != null) {
+                    mInProgressTaskFragment.notifyData();
+                }
+                if (mWillPublishFragment != null) {
+                    mWillPublishFragment.notifyData();
+                }
+                if (mFinishedFragment != null) {
+                    mFinishedFragment.notifyData();
+                }
                 Toast.makeText(MainActivity.this, "网络请求错误！", Toast.LENGTH_SHORT).show();
             } else if (msg.what == PUSHLISH_NEW_EXAM_SUCCESS) {
+                mWillPublishFragment.notifyData();
                 Toast.makeText(MainActivity.this, "发布成功！", Toast.LENGTH_SHORT).show();
             } else if (msg.what == MainActivity.SAVE_NEW_EXAM_SUCCESS) {
                 Toast.makeText(MainActivity.this, "保存成功！", Toast.LENGTH_SHORT).show();
             } else if (msg.what == HttpUtils.FAIL_ILLEGAL_USER_RESPONSE_CODE || msg.what == HttpUtils.FALL_TIMEOUT_TOKEN_RESPONSE_CODE) {
                 String id = (String) msg.obj;
-                PostTaskData postTaskData = new PostTaskData();
-                PostTaskData oldPostTaskData = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, id).findFirst();
-                TranserverUtil.transPostTask(postTaskData, oldPostTaskData);
-                postTaskData.setStatus(PostTaskData.STATUS_DATA_SAVE);
-                mHelper.update(postTaskData);
+                Exam exam = new Exam();
+                Exam oldExam = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, id).findFirst();
+                TranserverUtil.transPostTask(exam, oldExam);
+                exam.setStatus(Exam.STATUS_DATA_SAVE);
+                mHelper.update(exam);
                 mWillPublishFragment.notifyData();
                 mFinishedFragment.notifyData();
                 mInProgressTaskFragment.notifyData();

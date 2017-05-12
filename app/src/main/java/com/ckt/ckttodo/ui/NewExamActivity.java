@@ -1,12 +1,16 @@
 package com.ckt.ckttodo.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -16,7 +20,9 @@ import android.widget.Toast;
 
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.database.DatabaseHelper;
-import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.Exam;
+import com.ckt.ckttodo.presenter.NewExamPresenter;
+import com.ckt.ckttodo.util.MessageDispatcher;
 import com.ckt.ckttodo.util.TranserverUtil;
 import com.ckt.ckttodo.widgt.TaskDateDialog;
 
@@ -38,7 +44,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
     private Calendar mCalendar = Calendar.getInstance();
     private TextView mTextViewCount;
     private TextView mTextViewCorrect;
-    private PostTaskData mPostdata = new PostTaskData();
+    private Exam mPostdata = new Exam();
     private RadioButton mRadioButtonC;
     private RadioButton mRadioButtonCpp;
     private RadioButton mRadioButtonPython;
@@ -46,6 +52,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
     private DatabaseHelper mHelper;
     private int mPassProtal;
     private Timer mTimer = new Timer();
+    private String tmpID;
 
     public static final int NEW_EXAM = 1;
     public static final int MODIFY_EXAM = 2;
@@ -86,7 +93,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mTextViewDeadline.setOnClickListener(this);
         mButtonSubmit.setOnClickListener(this);
         mButtonSave.setOnClickListener(this);
-        mPostdata.setExam_lan(PostTaskData.LAN_C);
+        mPostdata.setExam_lan(Exam.LAN_C);
 
         mRadioGroupLan.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -94,13 +101,13 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
                 switch (checkedId) {
                     case R.id.c:
-                        mPostdata.setExam_lan(PostTaskData.LAN_C);
+                        mPostdata.setExam_lan(Exam.LAN_C);
                         break;
                     case R.id.cpp:
-                        mPostdata.setExam_lan(PostTaskData.LAN_CPP);
+                        mPostdata.setExam_lan(Exam.LAN_CPP);
                         break;
                     case R.id.py:
-                        mPostdata.setExam_lan(PostTaskData.LAN_PYTHON);
+                        mPostdata.setExam_lan(Exam.LAN_PYTHON);
                         break;
                 }
             }
@@ -139,7 +146,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 setEditAble(true);
                 String exam_id = intent.getStringExtra(PASS_ID);
                 if (exam_id != null) {
-                    PostTaskData data = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, exam_id).findFirst();
+                    Exam data = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id).findFirst();
                     fillData(data, true);
                 }
                 break;
@@ -163,7 +170,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 setEditAble(false);
                 String exam_id1 = intent.getStringExtra(PASS_ID);
                 if (exam_id1 != null) {
-                    PostTaskData data = mHelper.getRealm().where(PostTaskData.class).contains(PostTaskData.EXAM_ID, exam_id1).findFirst();
+                    Exam data = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id1).findFirst();
                     fillData(data, false);
                 }
                 break;
@@ -208,8 +215,9 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
-    private void fillData(PostTaskData data, boolean isShowButton) {
+    private void fillData(Exam data, boolean isShowButton) {
         mEditTextTitle.setText(data.getExam_title());
+        tmpID = data.getExam_id();
         if (data.getExam_content() != null && data.getExam_content().replace(" ", "").length() > 0) {
             mEditTextContent.setText(data.getExam_content());
         } else {
@@ -235,15 +243,15 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mCalendar.setTimeInMillis(data.getExam_deadline());
         switch (data.getExam_lan()) {
             case R.id.c:
-                mPostdata.setExam_lan(PostTaskData.LAN_C);
+                mPostdata.setExam_lan(Exam.LAN_C);
                 mRadioButtonC.setSelected(true);
                 break;
             case R.id.cpp:
-                mPostdata.setExam_lan(PostTaskData.LAN_CPP);
+                mPostdata.setExam_lan(Exam.LAN_CPP);
                 mRadioButtonCpp.setSelected(true);
                 break;
             case R.id.py:
-                mPostdata.setExam_lan(PostTaskData.LAN_PYTHON);
+                mPostdata.setExam_lan(Exam.LAN_PYTHON);
                 mRadioButtonPython.setSelected(true);
                 break;
         }
@@ -281,6 +289,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
     private void checkAndSaveOrSubmit(boolean isSubmit) {
 
+
         if (TextUtils.isEmpty(mEditTextTitle.getText())) {
             Toast.makeText(this, getResources().getString(R.string.exam_title_is_null), Toast.LENGTH_SHORT).show();
             return;
@@ -304,22 +313,32 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
 
         Intent intent = new Intent();
 
+        mPostdata.setExam_update_time(System.currentTimeMillis());
+        if (mPassProtal == NEW_EXAM) {
+            mPostdata.setExam_id(TranserverUtil.getUUID());
+        } else {
+            mPostdata.setExam_id(tmpID);
+        }
+
         if (isSubmit) {
-            mPostdata.setStatus(PostTaskData.STATUS_DATA_PASS);
+            mPostdata.setStatus(Exam.STATUS_DATA_PASS);
+            NewExamPresenter presenter = new NewExamPresenter(this);
+            presenter.postNewArticleMessage(mPostdata, MessageDispatcher.getHandler());
 
         } else {
-            mPostdata.setStatus(PostTaskData.STATUS_DATA_SAVE);
+            mPostdata.setStatus(Exam.STATUS_DATA_SAVE);
         }
-        mPostdata.setExam_update_time(System.currentTimeMillis());
-        mPostdata.setExam_id(TranserverUtil.getUUID());
-        mHelper.insert(mPostdata);
+        if (mPassProtal == NEW_EXAM) {
+            mHelper.insert(mPostdata);
+        } else {
+            mHelper.update(mPostdata);
+        }
 
         intent.putExtra(PASS_ID, mPostdata.getExam_id());
         intent.putExtra(PASS_PROTAL, mPassProtal);
 
         //TODO
-//        NewExamPresenter presenter = new NewExamPresenter(this);
-//        presenter.postNewArticleMessage(mPostdata, MessageDispatcher.getHandler());
+
         setResult(BACK_FROM_NEW_EXAM_RESULT_CODE, intent);
         finish();
     }
@@ -362,5 +381,43 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
         mDailog.dismiss();
     }
 
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (isShouldHideKeyboard(v, ev)) {
+                hideKeyboard(v.getWindowToken());
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+
+    private boolean isShouldHideKeyboard(View v, MotionEvent event) {
+        if (v != null && (v instanceof EditText)) {
+            int[] l = {0, 0};
+            v.getLocationInWindow(l);
+            int left = l[0],
+                    top = l[1],
+                    bottom = top + v.getHeight(),
+                    right = left + v.getWidth();
+            if (event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void hideKeyboard(IBinder token) {
+        if (token != null) {
+            InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            im.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
 
 }

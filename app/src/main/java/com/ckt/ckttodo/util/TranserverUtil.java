@@ -1,6 +1,6 @@
 package com.ckt.ckttodo.util;
 
-import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.Exam;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,7 +29,7 @@ public class TranserverUtil {
         return (new SimpleDateFormat(DATE_FORMAT)).format(calendar.getTime());
     }
 
-    public static void transPostTask(PostTaskData newTask, PostTaskData task) {
+    public static void transPostTask(Exam newTask, Exam task) {
         newTask.setExam_id(task.getExam_id());
         newTask.setExam_title(task.getExam_title());
         newTask.setExam_content(task.getExam_content());
