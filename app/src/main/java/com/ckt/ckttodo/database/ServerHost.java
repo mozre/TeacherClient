@@ -1,7 +1,9 @@
-package com.ckt.ckttodo.util;
+package com.ckt.ckttodo.database;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.ckt.ckttodo.util.Constants;
 
 /**
  * Created by MOZRE on 2017/5/3.
@@ -14,7 +16,7 @@ public class ServerHost {
     public final static String PORT_AND_PATH = ":8080/app";
     public String mSaveServerHost;
     private SharedPreferences mPreferences;
-    private final static String IP = "ip";
+    public final static String IP = "ip";
 
     public ServerHost(Context context) {
         mPreferences = context.getSharedPreferences(Constants.SHARE_NAME_CKT, Context.MODE_PRIVATE);

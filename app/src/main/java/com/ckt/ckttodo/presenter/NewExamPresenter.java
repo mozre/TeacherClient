@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.ckt.ckttodo.Base.BasePresenter;
 import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.ServerHost;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.ui.MainActivity;
 import com.ckt.ckttodo.util.HttpUtils;
@@ -39,9 +40,11 @@ public class NewExamPresenter extends BasePresenter {
     private static final String PATH_EXAM = "/exam";
     private static final String RESULT_CODE = "resultCode";
     private Context mContext;
+    private ServerHost serverHost;
 
     public NewExamPresenter(Context mContext) {
         this.mContext = mContext;
+        serverHost = new ServerHost(mContext);
     }
 
     public void postNewArticleMessage(final Exam mData, final Handler handler) {

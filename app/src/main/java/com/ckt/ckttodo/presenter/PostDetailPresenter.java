@@ -11,6 +11,8 @@ import com.ckt.ckttodo.Base.CommonFragmentView;
 import com.ckt.ckttodo.database.DataBaseUtil;
 import com.ckt.ckttodo.database.DatabaseHelper;
 import com.ckt.ckttodo.database.Exam;
+import com.ckt.ckttodo.database.PostTaskData;
+import com.ckt.ckttodo.database.ServerHost;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.util.HttpUtils;
 
@@ -35,6 +37,7 @@ import rx.schedulers.Schedulers;
 public class PostDetailPresenter extends BasePresenter {
 
     private static final String TAG = "PostDetailPresenter";
+    private ServerHost serverHost;
     private Context mContext;
     private CommonFragmentView mView;
     private DatabaseHelper mHelper;
@@ -46,6 +49,7 @@ public class PostDetailPresenter extends BasePresenter {
         this.mContext = mContext;
         this.mView = mView;
         this.mHelper = helper;
+        serverHost = new ServerHost(mContext);
     }
 
 
@@ -80,14 +84,13 @@ public class PostDetailPresenter extends BasePresenter {
                     public Integer call(String s) {
                         Log.d(TAG, "call: " + s);
                         JSONObject object = JSON.parseObject(s);
-                        List<Exam> mDatas = null;
-                        List<Exam> results = null;
+                        List<PostTaskData> mDatas = null;
                         Integer resultCode = object.getInteger(HttpUtils.RESULT_CODE);
                         if (resultCode != null) {
                             switch (resultCode) {
                                 case HttpUtils.SUCCESS_REPONSE_CODE:
                                     String datasStr = object.getString("datas");
-                                    mDatas = new ArrayList<>(JSONArray.parseArray(datasStr, Exam.class));
+                                    mDatas = new ArrayList<>(JSONArray.parseArray(datasStr, PostTaskData.class));
                                     saveData(mDatas);
                                     return HttpUtils.SUCCESS_REPONSE_CODE;
 
@@ -134,16 +137,18 @@ public class PostDetailPresenter extends BasePresenter {
 
     }
 
-    private void saveData(List<Exam> mDatas) {
+    private void saveData(List<PostTaskData> mDatas) {
         List<Exam> updateList = new ArrayList<>();
         List<Exam> inserList = new ArrayList<>();
-
-        for (Exam data : mDatas) {
+        Exam exam;
+        for (PostTaskData data : mDatas) {
 
             if (DataBaseUtil.checkObjectExists(mHelper, data.getExam_id())) {
-                updateList.add(data);
+                exam = new Exam(data);
+                updateList.add(exam);
             } else {
-                inserList.add(data);
+                exam = new Exam(data);
+                inserList.add(exam);
             }
 
         }

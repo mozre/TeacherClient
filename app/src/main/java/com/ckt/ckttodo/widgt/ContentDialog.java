@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.ckt.ckttodo.R;
-import com.ckt.ckttodo.util.ServerHost;
+import com.ckt.ckttodo.database.ServerHost;
 
 import java.util.List;
 

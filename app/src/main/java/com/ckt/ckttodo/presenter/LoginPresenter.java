@@ -6,6 +6,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ckt.ckttodo.Base.BasePresenter;
+import com.ckt.ckttodo.database.ServerHost;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.ui.LoginView;
 import com.ckt.ckttodo.util.HttpUtils;
@@ -31,10 +32,12 @@ public class LoginPresenter extends BasePresenter {
 
     private static final String RESULT_CODE = "resultCode";
     private static final String TOKEN = "token";
+    private ServerHost serverHost;
 
     public LoginPresenter(Context mContext, LoginView mLoginView) {
         this.mContext = mContext;
         this.mLoginView = mLoginView;
+        serverHost = new ServerHost(mContext);
     }
 
     public void signIn(final String username, final String password) {

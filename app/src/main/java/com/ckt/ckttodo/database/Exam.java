@@ -42,6 +42,23 @@ public class Exam extends RealmObject {
     public static final String EXAM_UPDATE_TIME = "exam_update_time";
     public static final String EXAM_DEADLINE = "exam_deadline";
 
+
+    public Exam(PostTaskData data) {
+        this.exam_id = data.getExam_id();
+        this.exam_title = data.getExam_title();
+        this.exam_content = data.getExam_content();
+        this.exam_deadline = Long.valueOf(data.getExam_deadline());
+        this.exam_update_time = Long.valueOf(data.getExam_update_time());
+        this.exam_in_arg = data.getExam_in_arg();
+        this.exam_out_arg = data.getExam_out_arg();
+        this.exam_remark = data.getExam_remark();
+        this.exam_lan = data.getExam_lan();
+        this.exam_correct_count = data.getExam_correct_count();
+        this.exam_commit_count = data.getExam_commit_count();
+        this.exam_tatal = data.getExam_tatal();
+        this.status = STATUS_DATA_PASS;
+    }
+
     public String getExam_id() {
         return exam_id;
     }

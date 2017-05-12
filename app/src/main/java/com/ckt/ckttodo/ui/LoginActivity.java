@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.ckt.ckttodo.R;
 import com.ckt.ckttodo.presenter.LoginPresenter;
 import com.ckt.ckttodo.util.NetState;
-import com.ckt.ckttodo.util.ServerHost;
+import com.ckt.ckttodo.database.ServerHost;
 import com.ckt.ckttodo.widgt.ContentDialog;
 
 
