@@ -263,7 +263,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         @Override
         public boolean onLongClick(View v) {
             if (v == container) {
-                itemContainerLongClickedEvent();
+//                itemContainerLongClickedEvent();
             }
             return true;
         }

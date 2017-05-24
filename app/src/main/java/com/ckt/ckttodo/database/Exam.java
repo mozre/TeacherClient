@@ -42,6 +42,7 @@ public class Exam extends RealmObject {
     public static final String EXAM_UPDATE_TIME = "exam_update_time";
     public static final String EXAM_DEADLINE = "exam_deadline";
 
+    public Exam(){}
 
     public Exam(PostTaskData data) {
         this.exam_id = data.getExam_id();

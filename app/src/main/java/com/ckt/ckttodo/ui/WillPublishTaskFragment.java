@@ -55,7 +55,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
     private static boolean isShowCheckBox = false;
     private Map<Integer, Boolean> mItemsSelectStatus = new HashMap<>();
     private ShowMainMenuItem mShowMenuItem;
-    private DatabaseHelper mHelper = DatabaseHelper.getInstance(getContext());
+    private DatabaseHelper mHelper;
     private Context mContext;
 
     @Override
@@ -80,6 +80,7 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
 
 
     private View init(LayoutInflater inflater) {
+        mHelper = DatabaseHelper.getInstance(getContext());
         mShowTasks = new LinkedList<>();
         getFistDataList();
         mFragmentTaskBinding = FragmentTaskBinding.inflate(inflater);
@@ -194,14 +195,14 @@ public class WillPublishTaskFragment extends Fragment implements SwipeRefreshLay
                 holder.checkBox.setChecked(mItemsSelectStatus.get(position));
                 holder.checkBox.setVisibility(View.VISIBLE);
                 holder.imageButtonStatus.setVisibility(View.INVISIBLE);
-                holder.textViewToTop.setVisibility(View.VISIBLE);
+//                holder.textViewToTop.setVisibility(View.VISIBLE);
                 if (mShowTasks.get(position).getTopNumber() > 0) {
                     holder.textViewToTop.setText(getResources().getString(R.string.cancel_top));
                 }
 
             } else {
                 holder.checkBox.setVisibility(View.GONE);
-                holder.textViewToTop.setVisibility(View.GONE);
+//                holder.textViewToTop.setVisibility(View.GONE);
                 holder.imageButtonStatus.setVisibility(View.VISIBLE);
                 holder.checkBox.setChecked(false);
             }

@@ -88,6 +88,7 @@ public class FinishedTaskFragment extends Fragment implements SwipeRefreshLayout
         mRecyclerView = mFragmentTaskBinding.recyclerTaskList;
         mSwipeRefreshLayout = mFragmentTaskBinding.commonHomeFragmentRefresh;
         mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setEnabled(false);
         mRecyclerView.setOnLoadMoreListener(this);
         mAdapter = new TaskRecyclerViewAdapter();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -259,7 +260,7 @@ public class FinishedTaskFragment extends Fragment implements SwipeRefreshLayout
         @Override
         public boolean onLongClick(View v) {
             if (v == container) {
-                itemContainerLongClickedEvent();
+//                itemContainerLongClickedEvent();
             }
             return true;
         }

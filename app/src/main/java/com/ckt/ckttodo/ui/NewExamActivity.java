@@ -1,9 +1,13 @@
 package com.ckt.ckttodo.ui;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -49,16 +53,19 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
     private RadioButton mRadioButtonCpp;
     private RadioButton mRadioButtonPython;
     private MenuItem mMenuItemEdit;
+    private MenuItem mMenuItemDel;
     private DatabaseHelper mHelper;
     private int mPassProtal;
     private Timer mTimer = new Timer();
     private String tmpID;
+    private Exam mData;
 
     public static final int NEW_EXAM = 1;
     public static final int MODIFY_EXAM = 2;
     public static final int SHOW_EXAM = 3;
     public static final String PASS_PROTAL = "pass_protal";
     public static final String PASS_ID = "pass_id";
+    public static final int BACK_FROM_DEL_EXAM_RESULT_CODE = 98;
     public static final int BACK_FROM_NEW_EXAM_RESULT_CODE = 99;
 
     @Override
@@ -138,16 +145,22 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void run() {
                         if (mMenuItemEdit != null) {
-                            mMenuItemEdit.setVisible(false);
-                            cancel();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mMenuItemEdit.setVisible(false);
+                                    cancel();
+                                }
+                            });
+
                         }
                     }
                 }, 2, 30);
                 setEditAble(true);
                 String exam_id = intent.getStringExtra(PASS_ID);
                 if (exam_id != null) {
-                    Exam data = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id).findFirst();
-                    fillData(data, true);
+                     mData = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id).findFirst();
+                    fillData(mData, true);
                 }
                 break;
             case SHOW_EXAM:
@@ -160,18 +173,20 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                                 @Override
                                 public void run() {
                                     mMenuItemEdit.setVisible(true);
+                                    mMenuItemDel.setVisible(true);
+                                    cancel();
                                 }
                             });
 
-                            cancel();
                         }
                     }
                 }, 2, 30);
                 setEditAble(false);
                 String exam_id1 = intent.getStringExtra(PASS_ID);
                 if (exam_id1 != null) {
-                    Exam data = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id1).findFirst();
-                    fillData(data, false);
+
+                    mData = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id1).findFirst();
+                    fillData(mData, false);
                 }
                 break;
             default:
@@ -359,17 +374,64 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 setEditAble(true);
 
                 break;
-
+            case R.id.dmenu_delete:
+                deleteExam();
+                break;
 
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void deleteExam() {
+        Dialog dialog = new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("确认要删除此题目？")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final ProgressDialog dialog1 = new ProgressDialog(NewExamActivity.this);
+                        dialog1.setTitle("删除");
+                        dialog1.setMessage("删除中...");
+                        dialog1.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        dialog1.setCanceledOnTouchOutside(false);
+                        dialog1.show();
+                        NewExamPresenter presenter = new NewExamPresenter(NewExamActivity.this);
+                        presenter.delExam(mData.getExam_id(), new DelSuccessful() {
+                            @Override
+                            public void delSuccessful() {
+                                dialog1.dismiss();
+                                mHelper.delete(mData);
+                                Toast.makeText(NewExamActivity.this, "删除成功！", Toast.LENGTH_SHORT).show();
+                                setResult(BACK_FROM_DEL_EXAM_RESULT_CODE);
+                                finish();
+                            }
+
+                            @Override
+                            public void networkErro() {
+                                dialog1.dismiss();
+                                Toast.makeText(NewExamActivity.this, "删除失败，请稍后重试！", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create();
+        dialog.show();
+
+
+    }
+
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         mMenuItemEdit = menu.findItem(R.id.menu_edit);
+        mMenuItemDel = menu.findItem(R.id.dmenu_delete);
         mMenuItemEdit.setVisible(false);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -418,6 +480,12 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             im.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS);
         }
+    }
+
+    public interface DelSuccessful {
+        void delSuccessful();
+
+        void networkErro();
     }
 
 }

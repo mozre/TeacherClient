@@ -21,7 +21,6 @@ public class PostTaskData implements Serializable {
     private int exam_tatal;
     private int exam_commit_count;
     private int exam_correct_count;
-    private int status;
 
     public PostTaskData(Exam exam) {
         this.exam_id = exam.getExam_id();
@@ -36,8 +35,9 @@ public class PostTaskData implements Serializable {
         this.exam_tatal = exam.getExam_tatal();
         this.exam_commit_count = exam.getExam_commit_count();
         this.exam_correct_count = exam.getExam_correct_count();
-        this.status = exam.getStatus();
     }
+
+    public PostTaskData() {}
 
     public String getExam_id() {
         return exam_id;
@@ -135,11 +135,4 @@ public class PostTaskData implements Serializable {
         this.exam_correct_count = exam_correct_count;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
 }

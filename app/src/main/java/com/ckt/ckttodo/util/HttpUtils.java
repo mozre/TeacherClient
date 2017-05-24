@@ -17,7 +17,7 @@ public class HttpUtils {
     public static final int FALL_ILLEGAL_PASSWORD_RESPONSE_CODE = 400;
     public static final int FALL_TIMEOUT_TOKEN_RESPONSE_CODE = 400;
     public static final int SERVER_RESPONSE_ERR = 500;
-    public static final String RESULT_CODE = "resultcode";
+    public static final String RESULT_CODE = "resultCode";
 
     public static OkHttpClient getClient() {
         if (client == null) {

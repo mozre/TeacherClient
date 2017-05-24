@@ -1,6 +1,7 @@
 package com.ckt.ckttodo.presenter;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
@@ -15,6 +16,7 @@ import com.ckt.ckttodo.database.PostTaskData;
 import com.ckt.ckttodo.database.ServerHost;
 import com.ckt.ckttodo.database.User;
 import com.ckt.ckttodo.util.HttpUtils;
+import com.ckt.ckttodo.util.MessageDispatcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,14 +43,18 @@ public class PostDetailPresenter extends BasePresenter {
     private Context mContext;
     private CommonFragmentView mView;
     private DatabaseHelper mHelper;
+    private Handler mHandler;
+    private List<PostTaskData> mDatas = null;
     private static final String EXAM = "/exam?";
     public static final int ACTION_PULL = 1;
     public static final int ACTION_PUSH = 2;
+
 
     public PostDetailPresenter(Context mContext, CommonFragmentView mView, DatabaseHelper helper) {
         this.mContext = mContext;
         this.mView = mView;
         this.mHelper = helper;
+        this.mHandler = MessageDispatcher.getHandler();
         serverHost = new ServerHost(mContext);
     }
 
@@ -84,14 +90,22 @@ public class PostDetailPresenter extends BasePresenter {
                     public Integer call(String s) {
                         Log.d(TAG, "call: " + s);
                         JSONObject object = JSON.parseObject(s);
-                        List<PostTaskData> mDatas = null;
-                        Integer resultCode = object.getInteger(HttpUtils.RESULT_CODE);
+
+                        Integer resultCode = Integer.valueOf(object.getString(HttpUtils.RESULT_CODE));
                         if (resultCode != null) {
                             switch (resultCode) {
                                 case HttpUtils.SUCCESS_REPONSE_CODE:
-                                    String datasStr = object.getString("datas");
+                                    String datasStr = object.getString("data");
+                                    Log.d(TAG, "call: " + datasStr);
                                     mDatas = new ArrayList<>(JSONArray.parseArray(datasStr, PostTaskData.class));
-                                    saveData(mDatas);
+                                    Log.d(TAG, "call: mData size = " + mDatas.size());
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            saveData(mDatas);
+                                        }
+                                    });
+
                                     return HttpUtils.SUCCESS_REPONSE_CODE;
 
                                 case HttpUtils.FAIL_ILLEGAL_USER_RESPONSE_CODE:

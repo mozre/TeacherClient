@@ -69,6 +69,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final int PUSHLISH_NEW_EXAM_FAIL = 31;
     public static final int PUSHLISH_NEW_EXAM_SUCCESS = 32;
     public static final int SAVE_NEW_EXAM_SUCCESS = 33;
+    public static final int DEL_EXAM_FAIL = 34;
 
     public static final int DELETE = 1;
     public static final int ADD = 2;
@@ -109,6 +110,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     mFinishedFragment.notifyData();
                 }
 
+            }
+
+        }
+        if (resultCode == NewExamActivity.BACK_FROM_DEL_EXAM_RESULT_CODE) {
+            if (mInProgressTaskFragment != null) {
+                mInProgressTaskFragment.notifyData();
+            }
+            if (mFinishedFragment != null) {
+                mWillPublishFragment.notifyData();
+            }
+            if (mWillPublishFragment != null) {
+                mWillPublishFragment.notifyData();
             }
 
         }
@@ -302,7 +315,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 mMenuItemFalse.setVisible(false);
                 mMenuItemSure.setVisible(false);
-                mInProgressTaskFragment.finishTaskAction();
+                mWillPublishFragment.finishTaskAction();
                 break;
             case R.id.menu_delete:
                 //删除选中项结束事件
@@ -344,7 +357,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 transitionTo(new Intent(this, AboutActivity.class));
                 break;
             case R.id.nav_login_out:
+                mHelper.getRealm().beginTransaction();
                 mHelper.getRealm().clear(Exam.class);
+                mHelper.getRealm().commitTransaction();
                 setResult(LOGIN_OUT_RESULT_CODE);
                 finish();
                 break;
@@ -426,6 +441,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Toast.makeText(MainActivity.this, "登录已过期！", Toast.LENGTH_SHORT).show();
                 setResult(LOGIN_OUT_RESULT_CODE);
                 finish();
+            } else if (msg.what == DEL_EXAM_FAIL) {
+                Toast.makeText(MainActivity.this, "删除失败，请稍后重试！", Toast.LENGTH_SHORT).show();
             }
             super.handleMessage(msg);
         }
