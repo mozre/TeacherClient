@@ -25,7 +25,6 @@ import com.ckt.ckttodo.database.Exam;
 import com.ckt.ckttodo.databinding.FragmentTaskBinding;
 import com.ckt.ckttodo.databinding.TaskListItemBinding;
 import com.ckt.ckttodo.presenter.PostDetailPresenter;
-import com.ckt.ckttodo.util.TranserverUtil;
 import com.ckt.ckttodo.widgt.TaskDividerItemDecoration;
 import com.ckt.ckttodo.widgt.TimeWatchDialog;
 import com.mcxiaoke.next.recycler.EndlessRecyclerView;
@@ -41,7 +40,8 @@ import java.util.Map;
 /**
  * Created by mozre
  */
-public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, EndlessRecyclerView.OnLoadMoreListener, CommonFragmentView {
+public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
+        EndlessRecyclerView.OnLoadMoreListener, CommonFragmentView {
 
     private static final String TAG = "InProgressTaskFragment";
     private FragmentTaskBinding mFragmentTaskBinding;
@@ -91,7 +91,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mRecyclerView.setOnLoadMoreListener(this);
 
-
+        // Recyclerview Adapter设置 及布局展示设置
         mAdapter = new TaskRecyclerViewAdapter();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.addItemDecoration(new TaskDividerItemDecoration(getContext(),
@@ -101,7 +101,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
     }
 
 
-    //     过滤 Task
+    //     过滤 Task 获取属于当前状态的Exam
     private void screenTask(List<Exam> tasks) {
         if (mShowTasks == null) {
             mShowTasks = new LinkedList<>();
@@ -121,6 +121,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         sortTop(mTopTasks);
     }
 
+    // 置顶相关，此处未用
     private void sortTop(LinkedList<Exam> list) {
         if (list.size() == 0) {
             return;
@@ -161,7 +162,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         }
 
         /**
-         * clear mItemsSelectStatus before notifyDataSetChanged
+         * clear mItemsSelectStatus before notifyDataSetChanged 更新recyler同时初始化chcekbox状态集合
          */
 
         public void customNotifyDataSetChanged() {
@@ -171,7 +172,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
 
         /**
-         * if delete data,show update mTasks data
+         * if delete data,show update mTasks data 删除某些item后的视图更新
          */
 
         public void customDeleteNotifyDataSetChanged() {
@@ -180,7 +181,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
             notifyDataSetChanged();
         }
 
-
+        // 每次初始化checkbox记录
         private void resetItemSelectStatus(Map<Integer, Boolean> map) {
             map.clear();
             for (int i = 0; mShowTasks.size() > i; ++i) {
@@ -252,7 +253,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
             });
 
         }
-
+// DataBinding相关用于实现数据填充
 
         public void setData(Exam data) {
             this.mTask = data;
@@ -280,7 +281,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
                         mItemsSelectStatus.put((Integer) container.getTag(), true);
                     }
                 } else {
-
+                    //点击进入详情Activity
                     Intent intent = new Intent(getContext(), NewExamActivity.class);
                     intent.putExtra(NewExamActivity.PASS_PROTAL, NewExamActivity.SHOW_EXAM);
                     intent.putExtra(NewExamActivity.PASS_ID, mTask.getExam_id());
@@ -377,7 +378,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         return tmpList;
     }
 
-
+    // 由于数据库 查询得到的数据不能修改，故只能产生一个新的对象后填写数据后再做数据库操作
     private Exam copyTask(Exam tmpTask) {
         Exam result = new Exam();
         result.setExam_id(tmpTask.getExam_id());
@@ -398,7 +399,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
     }
 
     /**
-     * control about the delete checkbox visible or not
+     * control about the delete checkbox visible or not 处理长按事件
      */
 
     private void itemContainerLongClickedEvent() {
@@ -408,7 +409,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
     }
 
     /**
-     * control delete task listl
+     * control delete task listl 删除完成后调用 用于删除本地数据库的数据
      *
      * @param isDelete
      */
@@ -430,30 +431,30 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
         mAdapter.customNotifyDataSetChanged();
     }
+//
+//    public void finishTaskAction() {
+//        isShowCheckBox = false;
+//        List<Exam> tasks = new ArrayList<>();
+//        for (int position : mItemsSelectStatus.keySet()) {
+//            if (mItemsSelectStatus.get(position)) {
+//                tasks.add(mShowTasks.get(position));
+//            }
+//        }
+//        Exam upDateTask = new Exam();
+//        for (Exam task1 : tasks) {
+//            TranserverUtil.transPostTask(upDateTask, task1);
+//            upDateTask.setStatus(Exam.STATUS_DATA_PASS);
+//            mHelper.update(upDateTask);
+//        }
+//        mAdapter.customDeleteNotifyDataSetChanged();
+//    }
 
-    public void finishTaskAction() {
-        isShowCheckBox = false;
-        List<Exam> tasks = new ArrayList<>();
-        for (int position : mItemsSelectStatus.keySet()) {
-            if (mItemsSelectStatus.get(position)) {
-                tasks.add(mShowTasks.get(position));
-            }
-        }
-        Exam upDateTask = new Exam();
-        for (Exam task1 : tasks) {
-            TranserverUtil.transPostTask(upDateTask, task1);
-            upDateTask.setStatus(Exam.STATUS_DATA_PASS);
-            mHelper.update(upDateTask);
-        }
-        mAdapter.customDeleteNotifyDataSetChanged();
-    }
-
-
+    // 控制Menu展示的接口
     public interface ShowMainMenuItem {
         void setShowMenuItem(boolean isShow);
     }
 
-
+    // 刷新接口
     @Override
     public void onRefresh() {
         PostDetailPresenter presenter = new PostDetailPresenter(mContext, this, mHelper);
@@ -464,6 +465,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
     }
 
+    // 加载更多接口
     @Override
     public void onLoadMore(EndlessRecyclerView view) {
         Long seconds = null;
@@ -483,7 +485,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         mSwipeRefreshLayout.setEnabled(false);
     }
 
-
+    // 网络请求返回，当用户状态失效，退出此界面进入login页面
     @Override
     public void userNeedDoLogin() {
 
@@ -492,7 +494,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
     }
 
-
+    // 上拉刷新或下拉加载更多后，回调此方法进行数据的展示
     @Override
     public void notifyNewData(int action) {
         if (action == PostDetailPresenter.ACTION_PULL) {
@@ -509,6 +511,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
         mSwipeRefreshLayout.setEnabled(true);
     }
 
+    // 网络请求错误后展示
     @Override
     public void notfyNetworkRequestErro() {
         Toast.makeText(mContext, "网络请求失败！", Toast.LENGTH_SHORT).show();
@@ -528,7 +531,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
     }
 
-
+    // 筛选处于发布状态 Exam
     private void getFistDataList() {
         Iterator<Exam> iterator = mHelper.getRealm().allObjectsSorted(Exam.class, Exam.EXAM_DEADLINE, true).iterator();
         mTasks.clear();
@@ -548,6 +551,7 @@ public class InProgressTaskFragment extends Fragment implements SwipeRefreshLayo
 
     }
 
+    // 筛选处于发布状态的Exam，大于当前最小时间 加载更多时调用
     private void getMoreDataList() {
         Iterator<Exam> iterator = mHelper.getRealm().allObjectsSorted(Exam.class, Exam.EXAM_UPDATE_TIME, true).iterator();
         Exam data = mShowTasks.getLast();
