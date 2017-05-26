@@ -109,6 +109,7 @@
                     android:textSize="12sp" />
 
                 <RadioButton
+                    android:visibility="gone"
                     android:id="@+id/py"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"

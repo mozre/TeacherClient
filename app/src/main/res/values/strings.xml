@@ -150,7 +150,7 @@
     <string name="ip">IP</string>
     <string name="exam_content">题目内容</string>
     <string name="exam_title">题目标题</string>
-    <string name="input_args">输入参数，各参数用空格分开</string>
+    <string name="input_args">输入参数，各参数用逗号分开</string>
     <string name="output_args">输出参数（只能有一个参数）</string>
     <string name="remark">备注</string>
     <string name="commit_count">提交统计：</string>

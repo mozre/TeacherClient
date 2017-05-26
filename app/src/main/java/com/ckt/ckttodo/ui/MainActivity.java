@@ -257,7 +257,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    @SuppressWarnings("unchecked")
+      @SuppressWarnings("unchecked")
     void transitionTo(Intent i) {
         final Pair<View, String>[] pairs = TransitionHelper.createSafeTransitionParticipants(this, true);
         ActivityOptionsCompat transitionActivityOptions = ActivityOptionsCompat.makeSceneTransitionAnimation(this, pairs);
@@ -315,7 +315,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 mMenuItemFalse.setVisible(false);
                 mMenuItemSure.setVisible(false);
-                mWillPublishFragment.finishTaskAction();
+//                mWillPublishFragment.finishTaskAction();
+                mWillPublishFragment.notifyData();
                 break;
             case R.id.menu_delete:
                 //删除选中项结束事件
@@ -376,7 +377,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void setShowMenuItem(boolean isShow) {
         mMenuItemFalse.setVisible(isShow);
-        mMenuItemSure.setVisible(isShow);
+//        mMenuItemSure.setVisible(isShow);
     }
 
     @Override

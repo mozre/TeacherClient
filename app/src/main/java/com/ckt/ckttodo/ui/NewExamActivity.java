@@ -159,7 +159,7 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
                 setEditAble(true);
                 String exam_id = intent.getStringExtra(PASS_ID);
                 if (exam_id != null) {
-                     mData = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id).findFirst();
+                    mData = mHelper.getRealm().where(Exam.class).contains(Exam.EXAM_ID, exam_id).findFirst();
                     fillData(mData, true);
                 }
                 break;
@@ -276,6 +276,8 @@ public class NewExamActivity extends AppCompatActivity implements View.OnClickLi
             mButtonSave.setVisibility(View.VISIBLE);
             mButtonSubmit.setVisibility(View.VISIBLE);
         } else {
+            mTextViewCorrect.setText(String.valueOf(data.getExam_correct_count()));
+            mTextViewCount.setText(String.valueOf(data.getExam_commit_count() + "/" + data.getExam_tatal()));
             mButtonSave.setVisibility(View.GONE);
             mButtonSubmit.setVisibility(View.GONE);
         }
